@@ -1,0 +1,39 @@
+.boxes {
+  display: flex;
+  gap: 1rem;
+  margin: 20px;
+}
+
+.boxes div {
+  width: 150px;
+  height: 150px;
+  background-color: rgb(0, 166, 255);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.boxes div:hover {
+  background-color: rgb(57, 83, 170);
+  transform: scale(1.05);
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1030; /* make sure it's above other content */
+  background-color: #fff; 
+  border-top: 1px solid #dee2e6; 
+}
+
+.Random{
+margin-left: 20px;
+}
