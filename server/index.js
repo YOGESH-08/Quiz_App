@@ -22,7 +22,7 @@ app.use(cors(corsOption));
 
 app.get("/quize/random",async (req,res)=>{
   try{
-    // const randomQuizes = await axios.get("https://opentdb.com/api.php?amount=10");
+    const randomQuizes = await axios.get("https://opentdb.com/api.php?amount=10");
     res.json(randomQuizes.data);
   }
   catch(err){
