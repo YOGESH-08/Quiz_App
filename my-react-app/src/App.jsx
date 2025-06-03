@@ -4,7 +4,8 @@ import Header from "./Header";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Wodal from "./Wodal";
-import Footer from "./footer";
+// import Footer from "./footer";
+import Boxes from "./Boxes";
 
 function App() {
   let randomQuizes;
@@ -16,28 +17,49 @@ function App() {
   const [showTrivia, setshowTrivia] = useState(false);
   const [difficulty, setDifficulty] = useState("Select");
   const [numQuestions, setNumQuestions] = useState(1);
+  const [showTriviaQuizQuestions, setShowTriviaQuizQuestions] = useState(false);
+  const [triviaQuizData, setTriviaQuizData] = useState(null);
 
-  return (
-    <>
-      <Header />
+  function HomeScreen() {
+    return (
       <div>
         <p className="Random">Available Quizes</p>
         <div>
           <div className="boxes">
-            <div>Box 1</div>
-            <div>Box 2</div>
+            <Boxes name="Box 1" />
+            <Boxes name="Box 2" />
           </div>
         </div>
-        <div className="">
+        <div>
           <p className="Random">Try Random Quiz</p>
           <div onClick={() => setshowTrivia(true)}>
             <div className="boxes">
-              <div>Trivia Quiz</div>
+              <Boxes name="Trivia Quiz" />
             </div>
           </div>
         </div>
       </div>
-      <Footer />
+    );
+  }
+
+
+  function TriviaQuiz() {
+  return (
+    <div className="container">
+      <div className="container1">Hello</div>
+      <div className="container2">
+        <div>World</div>
+      </div>
+      <div>Buttons</div>
+    </div>
+  );
+}
+
+  return (
+    <>
+      <Header />
+      {showTriviaQuizQuestions ? TriviaQuiz(): HomeScreen()}
+      {/* <Footer /> */}
       <Wodal
         show={showTrivia}
         onHide={() => setshowTrivia(false)}
@@ -78,10 +100,16 @@ function App() {
         }
         endButton="Start"
         onClick={async () => {
-          await axios.post("http://localhost:8080/quize/TriviaQuize", {
-            difficulty,
-            numQuestions,
-          });
+          setshowTrivia(false);
+          const response = await axios.post(
+            "http://localhost:8080/quize/TriviaQuize",
+            {
+              difficulty,
+              numQuestions,
+            }
+          );
+          setShowTriviaQuizQuestions(true);
+          setTriviaQuizData(response.data);
         }}
       />
     </>
