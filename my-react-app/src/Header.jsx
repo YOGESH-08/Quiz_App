@@ -65,6 +65,7 @@ function Header() {
         show={showSearch}
         onHide={() => setShowSearch(false)}
         heading="Search Quiz by code"
+        endButton="Search"
       />
 
       <Wodal
@@ -72,6 +73,7 @@ function Header() {
         onHide={() => setShowProfile(false)}
         heading="Hi! [name]
       profile"
+      endButton="close"
       />
 
       <Wodal
@@ -79,6 +81,7 @@ function Header() {
         onHide={() => setShowWarning(false)}
         heading="Confirm Logout"
         body="Unsaved Data Will be lost"
+        endButton="Logout"
       />
     </div>
   );

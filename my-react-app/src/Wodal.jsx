@@ -1,6 +1,6 @@
 import { Modal, Button } from "react-bootstrap";
 
-function Wodal({ show, onHide, heading, body }) {
+function Wodal({ show, onHide, heading, body, endButton, onClick}) {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
@@ -10,8 +10,8 @@ function Wodal({ show, onHide, heading, body }) {
         {body}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Close
+        <Button variant="secondary" onClick={onClick}>
+          {endButton}
         </Button>
       </Modal.Footer>
     </Modal>

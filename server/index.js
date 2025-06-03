@@ -13,23 +13,28 @@ const corsOption = {
 };
 
 const app = express();
+app.use(express.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
-
-
-app.get("/quize/random",async (req,res)=>{
-  try{
-    const randomQuizes = await axios.get("https://opentdb.com/api.php?amount=10");
-    res.json(randomQuizes.data);
+app.post("/quize/TriviaQuize", async (req, res) => {
+  const difficultyLevel = req.body.difficulty;
+    const numQues = req.body.numQuestions;
+  if (!difficultyLevel || !numQues) {
+    return res.status(400).json({error:"Enter the details"});
   }
-  catch(err){
+  try {
+    const randomQuizes = await axios.get(
+      `https://opentdb.com/api.php?amount=${numQues}&difficulty=${difficultyLevel}`
+    );
+    res.json(randomQuizes.data);
+    console.log("Recieved Successfully");
+  } catch (err) {
     console.log("error at fetching random quizes - trivia", err.message);
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}/quize`);
