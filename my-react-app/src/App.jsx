@@ -8,10 +8,14 @@ import Wodal from "./Wodal";
 import Boxes from "./Boxes";
 
 function App() {
-  let randomQuizes;
   const numberOption = [];
   for (let i = 1; i < 51; i++) {
     numberOption.push(i);
+  }
+
+  const DurationTiming = [];
+  for (let j = 5; j < 61; j = j + 5) {
+    DurationTiming.push(j);
   }
 
   const [showTrivia, setshowTrivia] = useState(false);
@@ -19,10 +23,37 @@ function App() {
   const [numQuestions, setNumQuestions] = useState(1);
   const [showTriviaQuizQuestions, setShowTriviaQuizQuestions] = useState(false);
   const [triviaQuizData, setTriviaQuizData] = useState(null);
+  const [sec, setSec] = useState(0);
+  // const [intervalId,setIntervalId] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [Duration, setDuration] = useState(0);
 
+  useEffect(() => {
+    if (!isRunning) return;
+    const id = setTimeout(() => {
+      setSec((prev) => prev + 1000);
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [isRunning, sec]);
+
+  function formatTime(milliseconds) {
+    const h = Math.floor(milliseconds / (1000 * 60 * 60));
+    const m = Math.floor((milliseconds / (1000 * 60)) % 60);
+    const s = Math.floor((milliseconds / 1000) % 60);
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+  
   function HomeScreen() {
     return (
       <div>
+        <Header
+          button1="Create Quiz"
+          button2={isRunning ? formatTime(sec) : "Search Quiz"}
+          button3="Profile"
+          button4="Logout"
+        />
         <p className="Random">Available Quizes</p>
         <div>
           <div className="boxes">
@@ -42,23 +73,30 @@ function App() {
     );
   }
 
-
   function TriviaQuiz() {
-  return (
-    <div className="container">
-      <div className="container1">Hello</div>
-      <div className="container2">
-        <div>World</div>
-      </div>
-      <div>Buttons</div>
-    </div>
-  );
-}
+    return (
+      <>
+        <Header button2={isRunning ? formatTime(sec) : null} />
+        <div className="container">
+          <div className="container1">Hello</div>
+          <div className="container2">
+            <div>World</div>
+          </div>
+          <div>
+            <button>Next</button>
+            <button>Previous</button>
+            <button>Skip</button>
+            <button>Review Later</button>
+            <button>Submit</button>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <Header />
-      {showTriviaQuizQuestions ? TriviaQuiz(): HomeScreen()}
+      {showTriviaQuizQuestions ? TriviaQuiz() : HomeScreen()}
       {/* <Footer /> */}
       <Wodal
         show={showTrivia}
@@ -96,10 +134,26 @@ function App() {
                 ))}
               </select>
             </div>
+
+            <div>
+              <label htmlFor="Duration">Select Minutes</label>
+              <select
+                name="Duration"
+                id="Duration"
+                onChange={(e) => setDuration(e.target.value)}
+              >
+                {DurationTiming.map((min, i) => {
+                  return(<option key={i} value={min}>
+                    {min}
+                  </option>);
+                })}
+              </select>
+            </div>
           </form>
         }
         endButton="Start"
         onClick={async () => {
+          setIsRunning(true);
           setshowTrivia(false);
           const response = await axios.post(
             "http://localhost:8080/quize/TriviaQuize",

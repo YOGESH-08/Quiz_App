@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
 import Wodal from "./Wodal";
 
-function Header() {
+function Header(props) {
   const [showSearch, setShowSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -21,43 +21,54 @@ function Header() {
           <span className="fs-4">QUIZE</span>
         </a>
         <ul className="nav nav-pills">
-          <li className="nav-item">
-            <a href="#" className="" aria-current="page"></a>
-          </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              Create Quiz
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className="nav-link"
-              onClick={() => {
-                setShowSearch(true);
-              }}
-            >
-              Search Quiz
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className="nav-link"
-              onClick={() => setShowProfile(true)}
-            >
-              Profile
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className="nav-link"
-              onClick={() => setShowWarning(true)}
-            >
-              Log out
-            </a>
-          </li>
+          {props.isRunning ? (
+            <li className="nav-item">
+              <span className="nav-link active">{props.time}</span>
+            </li>
+          ) : (
+            <>
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  {props.button1}
+                </a>
+              </li>
+              <li className="nav-item">
+                <a
+                  href="#"
+                  className="nav-link"
+                  onClick={() => {
+                    if (props.button2 == "Search Quiz") {
+                      setShowProfile(true);
+                    }
+                  }}
+                >
+                  {props.button2}
+                </a>
+              </li>
+              <li className="nav-item">
+                <a
+                  href="#"
+                  className="nav-link"
+                  onClick={() => {
+                   
+                      setShowProfile(true);
+                    
+                  }}
+                >
+                  {props.button3}
+                </a>
+              </li>
+              <li className="nav-item">
+                <a
+                  href="#"
+                  className="nav-link"
+                  onClick={() => setShowWarning(true)}
+                >
+                  {props.button4}
+                </a>
+              </li>
+            </>
+          )}
         </ul>
       </header>
 
@@ -73,7 +84,7 @@ function Header() {
         onHide={() => setShowProfile(false)}
         heading="Hi! [name]
       profile"
-      endButton="close"
+        endButton="close"
       />
 
       <Wodal
