@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Wodal from "./Wodal";
 // import Footer from "./footer";
 import Boxes from "./Boxes";
+import he from "he";
 
 function App() {
   const numberOption = [];
@@ -22,11 +23,12 @@ function App() {
   const [difficulty, setDifficulty] = useState("Select");
   const [numQuestions, setNumQuestions] = useState(1);
   const [showTriviaQuizQuestions, setShowTriviaQuizQuestions] = useState(false);
-  const [triviaQuizData, setTriviaQuizData] = useState(null);
+  const [triviaQuizData, setTriviaQuizData] = useState([]);
   // const [intervalId,setIntervalId] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [Duration, setDuration] = useState(0);
   const [sec, setSec] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   useEffect(() => {
     if (!isRunning || sec <= 0) return;
@@ -40,7 +42,7 @@ function App() {
     const h = Math.floor(milliseconds / (1000 * 60 * 60));
     const m = Math.floor((milliseconds / (1000 * 60)) % 60);
     const s = Math.floor((milliseconds / 1000) % 60);
-    
+
     return `${h.toString().padStart(2, "0")}:${m
       .toString()
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
@@ -74,37 +76,104 @@ function App() {
     );
   }
 
+  function questionCircles(num) {
+    return [...Array(num)].map((_, i) => {
+      return (
+        <div className="q" id={`q-${i + 1}`} key={i}>
+          {i + 1}
+        </div>
+      );
+    });
+  }
+
   function TriviaQuiz() {
+    const currentQuestion = triviaQuizData[currentQuestionIndex];
+    const options = [
+      ...currentQuestion.incorrect_answers,
+      currentQuestion.correct_answer,
+    ].sort(() => Math.random() - 0.5);
     return (
       <>
-        <Header 
-        button2={isRunning ? formatTime(sec) : null} />
+        <Header button2={isRunning ? formatTime(sec) : null} />
         <div className="container">
-          <div className="container1">Hello</div>
+          <div className="container1">
+            <div className="question">
+              {triviaQuizData.map((questionData, i) => {
+                if (currentQuestionIndex == i) {
+                  return (
+                    <>
+                      <p key={i}>
+                        {i + 1}.{he.decode(questionData.question)}
+                      </p>
+                      {options.map((option, i) => (
+                        <label key={i} style={{ display: "block" }}>
+                          <input
+                            type="checkbox"
+                            name={`q-${currentQuestionIndex}`}
+                            value={option}
+                          />
+                          {he.decode(option)}
+                        </label>
+                      ))}
+                    </>
+                  );
+                }
+              })}
+            </div>
+          </div>
           <div className="container2">
-            <div>World</div>
+            <div className="questioncircles">
+              {questionCircles(parseInt(numQuestions))}
+            </div>
           </div>
           <div className="TriviaButtons">
-            <button>Next</button>
-            <button>Previous</button>
-            <button>Skip</button>
-            <button>Review Later</button>
-            <button>Submit</button>
+            <button
+              className="Next"
+              onClick={() => {
+                setCurrentQuestionIndex(currentQuestionIndex + 1);
+              }}
+            >
+              Next
+            </button>
+            <button
+              className="Previous"
+              onClick={() => {
+                setCurrentQuestionIndex(currentQuestionIndex - 1);
+              }}
+            >
+              Previous
+            </button>
+            <button
+              className="Skip"
+              onClick={() => {
+                setCurrentQuestionIndex(currentQuestionIndex + 1);
+              }}
+            >
+              Skip
+            </button>
+            <button
+              className="Review"
+              onClick={() => {
+                setCurrentQuestionIndex(currentQuestionIndex + 1);
+              }}
+            >
+              Review Later
+            </button>
+            <button className="Submit">Submit</button>
           </div>
         </div>
       </>
     );
   }
 
-//   useEffect(() => {
-//   if (triviaQuizData) {
-//     console.log("Updated quiz data:", triviaQuizData);
-//   }
-// }, [triviaQuizData]);
+  // useEffect(() => {
+  //   if (triviaQuizData) {
+  //     console.log("Updated quiz data:", triviaQuizData);
+  //   }
+  // }, [triviaQuizData]);
 
   return (
     <>
-      {showTriviaQuizQuestions ? TriviaQuiz() : HomeScreen()}
       {/* <Footer /> */}
       <Wodal
         show={showTrivia}
@@ -133,7 +202,10 @@ function App() {
               <select
                 name="categroy"
                 id="Numberofquestions"
-                onChange={(e) => setNumQuestions(e.target.value)}
+                onChange={(e) => {
+                  const num = parseInt(e.target.value);
+                  setNumQuestions(num);
+                }}
               >
                 {numberOption.map((number) => (
                   <option value={number} key={number}>
@@ -149,9 +221,9 @@ function App() {
                 name="Duration"
                 id="Duration"
                 onChange={(e) => {
-                  const minutes  = parseInt(e.target.value);
+                  const minutes = parseInt(e.target.value);
                   setDuration(minutes);
-                  setSec(minutes *60*1000);
+                  setSec(minutes * 60 * 1000);
                 }}
               >
                 {DurationTiming.map((min, i) => {
@@ -167,7 +239,6 @@ function App() {
         }
         endButton="Start"
         onClick={async () => {
-          
           setshowTrivia(false);
           const response = await axios.post(
             "http://localhost:8080/quize/TriviaQuize",
@@ -178,9 +249,10 @@ function App() {
           );
           setIsRunning(true);
           setShowTriviaQuizQuestions(true);
-          setTriviaQuizData(response.data);
+          setTriviaQuizData(response.data.results);
         }}
       />
+      {showTriviaQuizQuestions ? TriviaQuiz() : HomeScreen()}
     </>
   );
 }

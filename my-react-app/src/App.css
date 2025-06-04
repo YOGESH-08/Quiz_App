@@ -1,4 +1,6 @@
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -11,11 +13,10 @@ body {
 }
 
 #root {
-  flex: 1;  
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
-
 
 .boxes {
   display: flex;
@@ -49,39 +50,36 @@ footer {
   left: 0;
   width: 100%;
   z-index: 1030; /* make sure it's above other content */
-  background-color: #fff; 
-  border-top: 1px solid #dee2e6; 
+  background-color: #fff;
+  border-top: 1px solid #dee2e6;
 }
 
-.Random{
-margin-left: 20px;
+.Random {
+  margin-left: 20px;
 }
 
-
-
-.quizform{
+.quizform {
   display: flex;
   /* flex-wrap: wrap; */
   gap: 10px;
 }
 
-.container{
+.container {
   display: grid;
-  grid-template-columns: 1fr 1fr; 
-  grid-template-rows:fr 0.5fr;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: fr 0.5fr;
 }
-.container1{
-  background-color: blue;
+.container1 {
   height: 70vh;
 }
 
-.container2{  
-  background-color: aquamarine;
+.container2 {
+  background-color:#dee2e6;
   height: 50vh;
-
+  overflow: auto;
 }
 
-.TriviaButtons{
+.TriviaButtons {
   display: flex;
   justify-content: space-around;
   margin-top: 10px;
@@ -90,7 +88,7 @@ margin-left: 20px;
 }
 .TriviaButtons button {
   border-radius: 25px;
-  background-color: #87CEEB; /* sky blue */
+  background-color: #87ceeb; /* sky blue */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -100,8 +98,48 @@ margin-left: 20px;
 }
 
 .TriviaButtons button:hover {
-  background-color: #00BFFF; /* deeper sky blue */
+  background-color: #00bfff; /* deeper sky blue */
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
 }
 
+button.Review:hover {
+  background-color: purple;
+}
+
+button.Submit:hover {
+  background-color: green;
+}
+
+button.Skip:hover {
+  background-color: red;
+}
+
+button.Next:hover {
+  background-color: green;
+}
+button.Previous:hover {
+  background-color: green;
+}
+
+.questioncircles{
+
+  display: flex;
+  justify-content:space-around;
+  margin: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 16px;
+}
+
+.q{
+  background-color: white;
+  border: 2.5px solid rgb(0, 157, 255);
+  width:40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
