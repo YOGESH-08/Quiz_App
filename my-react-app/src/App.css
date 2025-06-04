@@ -81,3 +81,27 @@ margin-left: 20px;
 
 }
 
+.TriviaButtons{
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  width: 700px;
+}
+.TriviaButtons button {
+  border-radius: 25px;
+  background-color: #87CEEB; /* sky blue */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.TriviaButtons button:hover {
+  background-color: #00BFFF; /* deeper sky blue */
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+}
+

@@ -34,7 +34,7 @@ function Header(props) {
               </li>
               <li className="nav-item">
                 <a
-                  href="#"
+                  // href="#"
                   className="nav-link"
                   onClick={() => {
                     if (props.button2 == "Search Quiz") {

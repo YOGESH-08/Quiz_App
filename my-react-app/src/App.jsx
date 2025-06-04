@@ -23,15 +23,15 @@ function App() {
   const [numQuestions, setNumQuestions] = useState(1);
   const [showTriviaQuizQuestions, setShowTriviaQuizQuestions] = useState(false);
   const [triviaQuizData, setTriviaQuizData] = useState(null);
-  const [sec, setSec] = useState(0);
   // const [intervalId,setIntervalId] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [Duration, setDuration] = useState(0);
+  const [sec, setSec] = useState(0);
 
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || sec <= 0) return;
     const id = setTimeout(() => {
-      setSec((prev) => prev + 1000);
+      setSec((prev) => prev - 1000);
     }, 1000);
     return () => clearTimeout(id);
   }, [isRunning, sec]);
@@ -40,11 +40,12 @@ function App() {
     const h = Math.floor(milliseconds / (1000 * 60 * 60));
     const m = Math.floor((milliseconds / (1000 * 60)) % 60);
     const s = Math.floor((milliseconds / 1000) % 60);
+    
     return `${h.toString().padStart(2, "0")}:${m
       .toString()
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   }
-  
+
   function HomeScreen() {
     return (
       <div>
@@ -76,13 +77,14 @@ function App() {
   function TriviaQuiz() {
     return (
       <>
-        <Header button2={isRunning ? formatTime(sec) : null} />
+        <Header 
+        button2={isRunning ? formatTime(sec) : null} />
         <div className="container">
           <div className="container1">Hello</div>
           <div className="container2">
             <div>World</div>
           </div>
-          <div>
+          <div className="TriviaButtons">
             <button>Next</button>
             <button>Previous</button>
             <button>Skip</button>
@@ -93,6 +95,12 @@ function App() {
       </>
     );
   }
+
+//   useEffect(() => {
+//   if (triviaQuizData) {
+//     console.log("Updated quiz data:", triviaQuizData);
+//   }
+// }, [triviaQuizData]);
 
   return (
     <>
@@ -140,12 +148,18 @@ function App() {
               <select
                 name="Duration"
                 id="Duration"
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => {
+                  const minutes  = parseInt(e.target.value);
+                  setDuration(minutes);
+                  setSec(minutes *60*1000);
+                }}
               >
                 {DurationTiming.map((min, i) => {
-                  return(<option key={i} value={min}>
-                    {min}
-                  </option>);
+                  return (
+                    <option key={i} value={min}>
+                      {min}
+                    </option>
+                  );
                 })}
               </select>
             </div>
@@ -153,7 +167,7 @@ function App() {
         }
         endButton="Start"
         onClick={async () => {
-          setIsRunning(true);
+          
           setshowTrivia(false);
           const response = await axios.post(
             "http://localhost:8080/quize/TriviaQuize",
@@ -162,6 +176,7 @@ function App() {
               numQuestions,
             }
           );
+          setIsRunning(true);
           setShowTriviaQuizQuestions(true);
           setTriviaQuizData(response.data);
         }}
