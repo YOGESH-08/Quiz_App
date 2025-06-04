@@ -3,8 +3,19 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
+import pg from "pg";
 
 dotenv.config();
+
+const db = new pg.Client({
+  user:"postgres",
+  host:"localhost",
+  password:String(process.env.PASS),
+  port: 5432,
+  database:"",
+});
+
+db.connect();
 
 const port = process.env.PORT;
 
