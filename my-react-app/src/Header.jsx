@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Form } from "react-bootstrap";
 import Wodal from "./Wodal";
+import { formToJSON } from "axios";
 
 function Header(props) {
   const [showSearch, setShowSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+
+  function CreateQuiz() {
+    return <>Hello</>;
+  }
 
   return (
     <div className="container-fluid">
@@ -28,7 +33,10 @@ function Header(props) {
           ) : (
             <>
               <li className="nav-item">
-                <a href="#" className="nav-link">
+                <a
+                  className="nav-link createquiz"
+                  onClick={() => props.setShowCreateModal(true)}
+                >
                   {props.button1}
                 </a>
               </li>
@@ -50,9 +58,7 @@ function Header(props) {
                   href="#"
                   className="nav-link"
                   onClick={() => {
-                   
-                      setShowProfile(true);
-                    
+                    setShowProfile(true);
                   }}
                 >
                   {props.button3}
@@ -71,6 +77,21 @@ function Header(props) {
           )}
         </ul>
       </header>
+
+      <Wodal
+        show={props.showCreateModal}
+        onHide={() => props.setShowCreateModal(false)}
+        heading="Create Quiz"
+        endButton="Create"
+        body={
+          <form className="CreateQuizBox" action="POST" method="SUBMIT">
+            <label htmlFor="QuizName">Enter Quiz Name</label>
+            <input type="text" name="Quiz-name" id="Quiz-name" />
+            <label htmlFor="QuestionNumber">Enter Number of question</label>
+            <input type="text" name="numberofquesion" id="numberofquestion" />
+          </form>
+        }
+      />
 
       <Wodal
         show={showSearch}

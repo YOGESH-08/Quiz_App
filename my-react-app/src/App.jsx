@@ -27,6 +27,7 @@ function App() {
   const [noOfCorrect, setNoOfCorrect] = useState(0);
   const [noOfWrong, setNoOfWrong] = useState(0);
   const [score, setScore] = useState(0);
+  const [showCreateQuiz, setShowCreateQuiz] = useState(false);
 
   useEffect(() => {
     if (!isRunning || sec <= 0) return;
@@ -53,6 +54,10 @@ function App() {
           button2={isRunning ? formatTime(sec) : "Search Quiz"}
           button3="Profile"
           button4="Logout"
+          isRunning={isRunning}
+          time={formatTime(sec)}
+          setShowCreateModal={setShowCreateQuiz}
+          showCreateModal={showCreateQuiz}
         />
         <p className="Random">Available Quizes</p>
         <div className="boxes">
@@ -157,7 +162,7 @@ function App() {
                 setNoOfWrong(numQuestions - correct);
                 setScore(Math.round((correct / numQuestions) * 100));
                 setIsRunning(false);
-                
+
                 alert(
                   `Quiz Submitted!\nCorrect: ${correct}\nWrong: ${
                     numQuestions - correct

@@ -163,3 +163,9 @@ button.Previous:hover {
   align-items: center;
   justify-content: center;
 }
+
+.createquiz:hover{
+
+cursor: pointer;
+color: blue;
+}
