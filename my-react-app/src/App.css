@@ -18,3 +18,20 @@ footer {
   margin-top: auto;
   height: 100px;
 }
+
+.createnewquizwindow{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color:bisque;
+    height: 100vh;
+}
+
+.child {
+    max-width: 250px;
+  display: flex;
+
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+}

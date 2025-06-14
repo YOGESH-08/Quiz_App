@@ -1,11 +1,71 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
+import axios from "axios"
 
 function App() {
   useEffect(() => {
     initMDB({ Ripple });
   }, []);
+
+  const [createQuiz, setCreateQuiz] = useState(false);
+  const [quizName, setQuizName] = useState("");
+  const [numQuestions, setNumQuestions] = useState("");
+  const [duration, setDuration] = useState("");
+
+
+
+
+async function handleSubmit(e){
+  e.preventDefault();
+  try{
+    const response = await axios.post("http://localhost:8080/quize/createquiz",{
+      QuizName : quizName
+    });
+    console.log("Server response (QuizName):", response.data)
+  }
+  catch(err){
+    console.log(err.message);
+  }
+}
+
+
+  function getInpForNewQuiz() {
+    if (createQuiz) {
+      return (
+        <div className="createnewquizwindow">
+          <div className="child">
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="QuizName">Enter Quiz Name</label>
+              <input
+        type="text"
+        value={quizName}
+        onChange={(e) => setQuizName(e.target.value)}
+      />
+
+      <label>Number of Questions</label>
+      <input
+        type="number"
+        value={numQuestions}
+        onChange={(e) => setNumQuestions(e.target.value)}
+        min="0"
+      />
+
+      <label>Enter the Time (min)</label>
+      <input
+        type="number"
+        value={duration}
+        onChange={(e) => setDuration(e.target.value)}
+        min="5"
+        step="5"
+      />
+              <button type="submit">Create</button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+  }
 
   return (
     <>
@@ -71,7 +131,13 @@ function App() {
                 </ul>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">
+                <a
+                  className="nav-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setCreateQuiz(true);
+                  }}
+                >
                   Create a New Quiz
                 </a>
               </li>
@@ -90,6 +156,8 @@ function App() {
           </div>
         </div>
       </nav>
+
+      {getInpForNewQuiz()}
 
       <footer className="bg-body-tertiary text-center">
         <div className="container p-4 pb-0">

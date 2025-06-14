@@ -8,11 +8,11 @@ import pg from "pg";
 dotenv.config();
 
 const db = new pg.Client({
-  user:process.env.PGUSER,
-  host:process.env.PGHOST,
-  password:process.env.PGPASSWORD,
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
-  database:process.env.PGDATABASE,
+  database: process.env.PGDATABASE,
 });
 
 db.connect();
@@ -30,8 +30,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
-
-
+app.post("/quize/createquiz/", (req, res) => {
+  const quizName = req.body.QuizName;
+  res.send("Quiz Name got successfully!");
+});
 
 
 
