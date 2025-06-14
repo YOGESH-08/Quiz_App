@@ -30,11 +30,61 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
-app.post("/quize/createquiz/", (req, res) => {
+app.post("/quize/createquiz/", async (req, res) => {
   const quizName = req.body.QuizName;
-  res.send("Quiz Name got successfully!");
+  const numberofquestions = req.body.noofquestions;
+  const duration = req.body.duration;
+  const user_id = 1; // temporary
+
+  try {
+    await db.query(
+      "INSERT INTO quizzes(user_id, quiz_name, total_questions, duration_minutes) VALUES ($1, $2, $3, $4)",
+      [user_id, quizName, numberofquestions, duration]
+    );
+    console.log("Successfully added to database (quiz details)");
+    res.send("Quiz created successfully!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Failed to create quiz");
+  }
 });
 
+app.post(`/quize/:quizName/addquestion`, async (req, res) => {
+  try {
+    const { quizName } = req.params;
+    const {
+      QuestionName,
+      option1,
+      option2,
+      option3,
+      option4,
+      correctOption,
+    } = req.body;
+
+    
+    const quizResult = await db.query(
+      "SELECT quiz_id FROM quizzes WHERE quiz_name = $1",
+      [quizName]
+    );
+
+    if (quizResult.rows.length === 0) {
+      return res.status(404).send("Quiz not found");
+    }
+
+    const quizId = quizResult.rows[0].quiz_id;
+
+    await db.query(
+      "INSERT INTO questions(quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [quizId, QuestionName, option1, option2, option3, option4, correctOption]
+    );
+
+    console.log("Successfully added question to DB");
+    res.send("Question added");
+  } catch (err) {
+    console.error("error adding quiz question", err.message);
+    res.status(500).send("Failed to add question");
+  }
+});
 
 
 app.listen(port, () => {

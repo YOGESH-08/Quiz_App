@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
-import axios from "axios"
+import axios from "axios";
 
 function App() {
   useEffect(() => {
@@ -12,23 +12,72 @@ function App() {
   const [quizName, setQuizName] = useState("");
   const [numQuestions, setNumQuestions] = useState("");
   const [duration, setDuration] = useState("");
+  const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [formData, setFormData] = useState({
+  QuestionName: "",
+  option1: "",
+  option2: "",
+  option3: "",
+  option4: "",
+  correctOption: "",
+});
 
 
-
-
-async function handleSubmit(e){
-  e.preventDefault();
-  try{
-    const response = await axios.post("http://localhost:8080/quize/createquiz",{
-      QuizName : quizName
+  function handleQuestiondetails(e) {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      return { ...prev, [name]: value };
     });
-    console.log("Server response (QuizName):", response.data)
   }
-  catch(err){
-    console.log(err.message);
-  }
-}
 
+  async function handleQuestionSubmit(e) {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/quize/${quizName}/addquestion`,
+        formData
+      );
+      console.log("Question sent to backend:", response.data);
+      const nextIndex = currentQuestionIndex + 1;
+      if (nextIndex < parseInt(numQuestions)) {
+        setCurrentQuestionIndex(nextIndex);
+        setFormData({
+          QuestionName: "",
+          option1: "",
+          option2: "",
+          option3: "",
+          option4: "",
+          correctOption: "",
+        });
+      } else {
+        alert("All questions added!");
+        setShowCreateQOptWindow(false);
+        setCurrentQuestionIndex(0);
+      }
+    } catch (err) {
+      console.error("Error submitting question:", err);
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/quize/createquiz",
+        {
+          QuizName: quizName,
+          noofquestions: numQuestions,
+          duration: duration,
+        }
+      );
+      console.log("Server response (QuizName):", response.data);
+      setCreateQuiz(false);
+      setShowCreateQOptWindow(true);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
 
   function getInpForNewQuiz() {
     if (createQuiz) {
@@ -38,33 +87,111 @@ async function handleSubmit(e){
             <form onSubmit={handleSubmit}>
               <label htmlFor="QuizName">Enter Quiz Name</label>
               <input
-        type="text"
-        value={quizName}
-        onChange={(e) => setQuizName(e.target.value)}
-      />
+                type="text"
+                value={quizName}
+                onChange={(e) => setQuizName(e.target.value)}
+              />
 
-      <label>Number of Questions</label>
-      <input
-        type="number"
-        value={numQuestions}
-        onChange={(e) => setNumQuestions(e.target.value)}
-        min="0"
-      />
+              <label>Number of Questions</label>
+              <input
+                type="number"
+                value={numQuestions}
+                onChange={(e) => setNumQuestions(e.target.value)}
+                min="0"
+              />
 
-      <label>Enter the Time (min)</label>
-      <input
-        type="number"
-        value={duration}
-        onChange={(e) => setDuration(e.target.value)}
-        min="5"
-        step="5"
-      />
-              <button type="submit">Create</button>
+              <label>Enter the Time (min)</label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                min="5"
+                step="5"
+              />
+              <button
+                type="submit"
+                // onClick={() => {
+                //   setCreateQuiz(false);
+                //   setShowCreateQOptWindow(true);
+                // }}
+              >
+                Create
+              </button>
             </form>
           </div>
         </div>
       );
     }
+  }
+
+  function quizQOptWindow() {
+    if (!showCreateQOptWindow) return;
+    return (
+      <form onSubmit={handleQuestionSubmit}>
+        <h4>
+          Question {currentQuestionIndex + 1} of {numQuestions}
+        </h4>
+
+        <label>Question</label>
+        <input
+          type="text"
+          name="QuestionName"
+          value={formData.QuestionName}
+          onChange={handleQuestiondetails}
+          required
+        />
+
+        <label>Option 1</label>
+        <input
+          type="text"
+          name="option1"
+          value={formData.option1}
+          onChange={handleQuestiondetails}
+          required
+        />
+        <label>Option 2</label>
+        <input
+          type="text"
+          name="option2"
+          value={formData.option2}
+          onChange={handleQuestiondetails}
+          required
+        />
+        <label>Option 3</label>
+        <input
+          type="text"
+          name="option3"
+          value={formData.option3}
+          onChange={handleQuestiondetails}
+          required
+        />
+        <label>Option 4</label>
+        <input
+          type="text"
+          name="option4"
+          value={formData.option4}
+          onChange={handleQuestiondetails}
+          required
+        />
+
+        <label>Correct Option (1–4)</label>
+        <input
+          type="number"
+          name="correctOption"
+          value={formData.correctOption}
+          onChange={handleQuestiondetails}
+          min="1"
+          max="4"
+          required
+        />
+
+        <button type="submit">
+          {currentQuestionIndex === parseInt(numQuestions) - 1
+            ? "Finish"
+            : "Next"}
+        </button>
+      </form>
+    );
   }
 
   return (
@@ -158,6 +285,7 @@ async function handleSubmit(e){
       </nav>
 
       {getInpForNewQuiz()}
+      {quizQOptWindow()}
 
       <footer className="bg-body-tertiary text-center">
         <div className="container p-4 pb-0">
