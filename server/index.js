@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
+
 app.post("/quize/createquiz/", async (req, res) => {
   const quizName = req.body.QuizName;
   const numberofquestions = req.body.noofquestions;
@@ -61,7 +62,7 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
       correctOption,
     } = req.body;
 
-    
+
     const quizResult = await db.query(
       "SELECT quiz_id FROM quizzes WHERE quiz_name = $1",
       [quizName]
@@ -83,6 +84,21 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
   } catch (err) {
     console.error("error adding quiz question", err.message);
     res.status(500).send("Failed to add question");
+  }
+});
+
+
+app.get("/quize", async (req, res) => {
+  const user_id = 1; 
+  try {
+    const response = await db.query(
+      "SELECT quiz_name, total_questions, duration_minutes FROM quizzes WHERE user_id=$1",
+      [user_id]
+    );
+    res.send(response.rows);
+  } catch (err) {
+    console.error("Error fetching quizzes:", err.message);
+    res.status(500).send("Failed to fetch quizzes");
   }
 });
 

@@ -6,6 +6,7 @@ import axios from "axios";
 function App() {
   useEffect(() => {
     initMDB({ Ripple });
+    homeScreen();
   }, []);
 
   const [createQuiz, setCreateQuiz] = useState(false);
@@ -14,15 +15,67 @@ function App() {
   const [duration, setDuration] = useState("");
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [quizlist, setQuizList] = useState([]);
   const [formData, setFormData] = useState({
-  QuestionName: "",
-  option1: "",
-  option2: "",
-  option3: "",
-  option4: "",
-  correctOption: "",
-});
+    QuestionName: "",
+    option1: "",
+    option2: "",
+    option3: "",
+    option4: "",
+    correctOption: "",
+  });
+  const homeScreen = async () => {
+    try {
+      const detailsOfQuizCreatedByUser = await axios.get(
+        "http://localhost:8080/quize"
+      );
+      console.log(
+        "Successfully got the names of quizes to be displayed as card"
+      );
+      setQuizList(detailsOfQuizCreatedByUser.data);
+      console.log(detailsOfQuizCreatedByUser.data);
+    } catch (err) {
+      console.log(
+        "Error in getting the names of quiz from back_end",
+        err.message
+      );
+    }
+  };
 
+  function quizCard() {
+    if (quizlist.length > 0) {
+      return quizlist.map((Name, index) => {
+        return (
+          <div key={index} className="card" style={{ width: "18rem" }}>
+            <img src="" className="card-img-top" alt="" />
+            <div className="card-body">
+              <h2 className="card-title">{Name.quiz_name}</h2>
+            </div>
+            <ul className="list-group list-group-flush">
+              <li className="list-group-item">
+                No.of.Question : {Name.total_questions}
+              </li>
+              <li className="list-group-item">
+                Duration : {Name.duration_minutes} mins
+              </li>
+              <li className="list-group-item">Score : </li>
+            </ul>
+            <div className="card-body">
+              <a href="#" className="card-link">
+                Card link
+              </a>
+              <a href="#" className="card-link">
+                Another link
+              </a>
+            </div>
+          </div>
+        );
+      });
+    } else {
+      console.log("No quizes found");
+      return <p>No Quizes found !</p>;
+    }
+  }
 
   function handleQuestiondetails(e) {
     const { name, value } = e.target;
@@ -71,6 +124,7 @@ function App() {
           duration: duration,
         }
       );
+      await homeScreen();
       console.log("Server response (QuizName):", response.data);
       setCreateQuiz(false);
       setShowCreateQOptWindow(true);
@@ -80,117 +134,161 @@ function App() {
   }
 
   function getInpForNewQuiz() {
-    if (createQuiz) {
-      return (
-        <div className="createnewquizwindow">
-          <div className="child">
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="QuizName">Enter Quiz Name</label>
+    if (!createQuiz) return null;
+
+    return (
+      <div className="container mt-5">
+        <div className="card shadow p-4">
+          <h4 className="mb-4 text-center text-primary">Create New Quiz</h4>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="quizName" className="form-label">
+                Quiz Name
+              </label>
               <input
                 type="text"
+                className="form-control"
+                id="quizName"
                 value={quizName}
                 onChange={(e) => setQuizName(e.target.value)}
+                placeholder="Enter quiz name"
+                required
               />
+            </div>
 
-              <label>Number of Questions</label>
+            <div className="mb-3">
+              <label htmlFor="numQuestions" className="form-label">
+                Number of Questions
+              </label>
               <input
                 type="number"
+                className="form-control"
+                id="numQuestions"
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(e.target.value)}
-                min="0"
+                placeholder="Enter total number of questions"
+                min="1"
+                required
               />
+            </div>
 
-              <label>Enter the Time (min)</label>
+            <div className="mb-3">
+              <label htmlFor="duration" className="form-label">
+                Duration (minutes)
+              </label>
               <input
                 type="number"
+                className="form-control"
+                id="duration"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
+                placeholder="Enter quiz duration"
                 min="5"
                 step="5"
+                required
               />
-              <button
-                type="submit"
-                // onClick={() => {
-                //   setCreateQuiz(false);
-                //   setShowCreateQOptWindow(true);
-                // }}
-              >
-                Create
-              </button>
-            </form>
-          </div>
+            </div>
+
+            <button type="submit" className="btn btn-success w-100">
+              Create Quiz
+            </button>
+          </form>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
   function quizQOptWindow() {
-    if (!showCreateQOptWindow) return;
+    if (!showCreateQOptWindow) return null;
+
     return (
-      <form onSubmit={handleQuestionSubmit}>
-        <h4>
-          Question {currentQuestionIndex + 1} of {numQuestions}
-        </h4>
+      <div className="container mt-5">
+        <div className="card shadow p-4">
+          <h4 className="mb-4 text-center text-primary">
+            Add Question {currentQuestionIndex + 1} of {numQuestions}
+          </h4>
+          <form onSubmit={handleQuestionSubmit}>
+            <div className="mb-3">
+              <label className="form-label">Question</label>
+              <input
+                type="text"
+                name="QuestionName"
+                className="form-control"
+                value={formData.QuestionName}
+                onChange={handleQuestiondetails}
+                required
+              />
+            </div>
 
-        <label>Question</label>
-        <input
-          type="text"
-          name="QuestionName"
-          value={formData.QuestionName}
-          onChange={handleQuestiondetails}
-          required
-        />
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Option 1</label>
+                <input
+                  type="text"
+                  name="option1"
+                  className="form-control"
+                  value={formData.option1}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Option 2</label>
+                <input
+                  type="text"
+                  name="option2"
+                  className="form-control"
+                  value={formData.option2}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Option 3</label>
+                <input
+                  type="text"
+                  name="option3"
+                  className="form-control"
+                  value={formData.option3}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Option 4</label>
+                <input
+                  type="text"
+                  name="option4"
+                  className="form-control"
+                  value={formData.option4}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+            </div>
 
-        <label>Option 1</label>
-        <input
-          type="text"
-          name="option1"
-          value={formData.option1}
-          onChange={handleQuestiondetails}
-          required
-        />
-        <label>Option 2</label>
-        <input
-          type="text"
-          name="option2"
-          value={formData.option2}
-          onChange={handleQuestiondetails}
-          required
-        />
-        <label>Option 3</label>
-        <input
-          type="text"
-          name="option3"
-          value={formData.option3}
-          onChange={handleQuestiondetails}
-          required
-        />
-        <label>Option 4</label>
-        <input
-          type="text"
-          name="option4"
-          value={formData.option4}
-          onChange={handleQuestiondetails}
-          required
-        />
+            <div className="mb-3">
+              <label className="form-label">Correct Option (1–4)</label>
+              <input
+                type="number"
+                name="correctOption"
+                className="form-control"
+                value={formData.correctOption}
+                onChange={handleQuestiondetails}
+                min="1"
+                max="4"
+                required
+              />
+            </div>
 
-        <label>Correct Option (1–4)</label>
-        <input
-          type="number"
-          name="correctOption"
-          value={formData.correctOption}
-          onChange={handleQuestiondetails}
-          min="1"
-          max="4"
-          required
-        />
-
-        <button type="submit">
-          {currentQuestionIndex === parseInt(numQuestions) - 1
-            ? "Finish"
-            : "Next"}
-        </button>
-      </form>
+            <button type="submit" className="btn btn-primary w-100">
+              {currentQuestionIndex === parseInt(numQuestions) - 1
+                ? "Finish"
+                : "Next Question"}
+            </button>
+          </form>
+        </div>
+      </div>
     );
   }
 
@@ -216,7 +314,15 @@ function App() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="#">
+                <a
+                  style={{ cursor: "pointer" }}
+                  className="nav-link active"
+                  aria-current="page"
+                  onClick={() => {
+                    setShowCreateQOptWindow(false);
+                    setCreateQuiz(false);
+                  }}
+                >
                   Home
                 </a>
               </li>
@@ -283,9 +389,9 @@ function App() {
           </div>
         </div>
       </nav>
-
       {getInpForNewQuiz()}
       {quizQOptWindow()}
+      {!createQuiz && !showCreateQOptWindow && quizCard()}
 
       <footer className="bg-body-tertiary text-center">
         <div className="container p-4 pb-0">
