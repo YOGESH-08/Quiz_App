@@ -8,11 +8,11 @@ import pg from "pg";
 dotenv.config();
 
 const db = new pg.Client({
-  user:"postgres",
-  host:"localhost",
-  password:String(process.env.PASS),
-  port: 5432,
-  database:"",
+  user:process.env.PGUSER,
+  host:process.env.PGHOST,
+  password:process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  database:process.env.PGDATABASE,
 });
 
 db.connect();
@@ -30,22 +30,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
-app.post("/quize/TriviaQuize", async (req, res) => {
-  const difficultyLevel = req.body.difficulty;
-    const numQues = req.body.numQuestions;
-  if (!difficultyLevel || !numQues) {
-    return res.status(400).json({error:"Enter the details"});
-  }
-  try {
-    const randomQuizes = await axios.get(
-      `https://opentdb.com/api.php?amount=${numQues}&difficulty=${difficultyLevel}`
-    );
-    res.json(randomQuizes.data);
-    console.log("Recieved Successfully");
-  } catch (err) {
-    console.log("error at fetching random quizes - trivia", err.message);
-  }
-});
+
+
+
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}/quize`);
