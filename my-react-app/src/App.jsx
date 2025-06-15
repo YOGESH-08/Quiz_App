@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
+import { Modal, Button } from "react-bootstrap";
 
 function App() {
   useEffect(() => {
@@ -16,6 +17,9 @@ function App() {
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizlist, setQuizList] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedQuizName, setSelectedQuizName] = useState("");
+  const [selectedQuizId, setSelectedQuizId] = useState(0);
   const [formData, setFormData] = useState({
     QuestionName: "",
     option1: "",
@@ -42,6 +46,12 @@ function App() {
     }
   };
 
+  async function handleDelete() {
+    const response = await axios.delete(
+      `http://localhost:8080/quize/delete/${selectedQuizName}/${selectedQuizId}`
+    );
+  }
+
   function quizCard() {
     if (quizlist.length > 0) {
       return quizlist.map((Name, index) => {
@@ -61,11 +71,23 @@ function App() {
               <li className="list-group-item">Score : </li>
             </ul>
             <div className="card-body">
-              <a href="#" className="card-link">
-                Card link
+              <a className="card-link" style={{ cursor: "pointer" }}>
+                Start
               </a>
-              <a href="#" className="card-link">
-                Another link
+              <a className="card-link" style={{ cursor: "pointer" }}>
+                Edit
+              </a>
+              <a
+                className="card-link"
+                style={{ cursor: "pointer" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowConfirm(true);
+                  setSelectedQuizName(Name.quiz_name);
+                  setSelectedQuizId(Name.quiz_id);
+                }}
+              >
+                Delete
               </a>
             </div>
           </div>
@@ -292,6 +314,25 @@ function App() {
     );
   }
 
+  function ConfirmBox({ show, handleClose, handleConfirm, message }) {
+    console.log("Called");
+    return (
+      <Modal show={showConfirm} onHide={handleClose} centered size="sm">
+        <Modal.Body className="text-center p-4">
+          <p className="mb-3">{message || "Are you sure?"}</p>
+          <div className="d-flex justify-content-around">
+            <Button variant="danger" onClick={handleConfirm}>
+              Yes
+            </Button>
+            <Button variant="secondary" onClick={handleClose}>
+              No
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -327,9 +368,7 @@ function App() {
                 </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">
-                  About
-                </a>
+                <a className="nav-link">Import</a>
               </li>
               <li className="nav-item dropdown">
                 <a
@@ -392,6 +431,16 @@ function App() {
       {getInpForNewQuiz()}
       {quizQOptWindow()}
       {!createQuiz && !showCreateQOptWindow && quizCard()}
+      <div>
+        {showConfirm ? (
+          <ConfirmBox
+            show={showConfirm}
+            handleClose={() => setShowConfirm(false)}
+            handleConfirm={handleDelete}
+            message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
+          />
+        ) : null}
+      </div>
 
       <footer className="bg-body-tertiary text-center">
         <div className="container p-4 pb-0">

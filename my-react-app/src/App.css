@@ -36,7 +36,62 @@ footer {
   border-radius: 10px;
 }
 
+.card {
+  background-color: #1e1e2f; /* dark slate blue tone */
+  border: 1px solid #2f2f45;
+  border-radius: 1rem;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 16px;
+}
 
-.yoge1{
-    background-color: black;
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.card-img-top {
+
+  object-fit: cover;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+.list-group-item {
+  background-color: #2a2a40;
+  border: none;
+  color: #f1f1f1;
+  font-size: 0.95rem;
+  padding: 10px 16px;
+}
+
+.card-link {
+  color: #4fd1c5; /* teal accent */
+  font-weight: 600;
+  margin-right: 10px;
+  transition: color 0.2s ease;
+}
+
+.card-link:hover {
+  color: #38b2ac;
+  text-decoration: underline;
+}
+
+
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-body p {
+  font-size: 1rem;
+  font-weight: 500;
 }

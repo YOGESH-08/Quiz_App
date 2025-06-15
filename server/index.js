@@ -87,12 +87,17 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
   }
 });
 
+app.delete("/quize/:quizName/:quizId",(req,res)=>{
+  const {quizName, quizId} = req.params;
+  t
+})
+
 
 app.get("/quize", async (req, res) => {
   const user_id = 1; 
   try {
     const response = await db.query(
-      "SELECT quiz_name, total_questions, duration_minutes FROM quizzes WHERE user_id=$1",
+      "SELECT quiz_id, quiz_name, total_questions, duration_minutes FROM quizzes WHERE user_id=$1",
       [user_id]
     );
     res.send(response.rows);
