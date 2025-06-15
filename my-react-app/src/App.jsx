@@ -47,55 +47,63 @@ function App() {
   };
 
   async function handleDelete() {
-    const response = await axios.delete(
-      `http://localhost:8080/quize/delete/${selectedQuizName}/${selectedQuizId}`
-    );
+    setShowConfirm(false);
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/quize/delete/${selectedQuizName}/${selectedQuizId}`
+      );
+      console.log("Successful", response.data);
+      await homeScreen();
+    } catch (err) {
+      console.log("error in deleting : ", err.message);
+    }
   }
 
   function quizCard() {
     if (quizlist.length > 0) {
-      return quizlist.map((Name, index) => {
-        return (
-          <div key={index} className="card" style={{ width: "18rem" }}>
-            <img src="" className="card-img-top" alt="" />
-            <div className="card-body">
-              <h2 className="card-title">{Name.quiz_name}</h2>
+      return (
+        <div className="d-flex flex-wrap justify-content-start gap-3">
+          {quizlist.map((Name, index) => (
+            <div key={index} className="card" style={{ width: "18rem" }}>
+              <img src="" className="card-img-top" alt="" />
+              <div className="card-body">
+                <h2 className="card-title">{Name.quiz_name}</h2>
+              </div>
+              <ul className="list-group list-group-flush">
+                <li className="list-group-item">
+                  No. of Questions: {Name.total_questions}
+                </li>
+                <li className="list-group-item">
+                  Duration: {Name.duration_minutes} mins
+                </li>
+                <li className="list-group-item">Score:</li>
+              </ul>
+              <div className="card-body">
+                <a className="card-link" style={{ cursor: "pointer" }}>
+                  Start
+                </a>
+                <a className="card-link" style={{ cursor: "pointer" }}>
+                  Edit
+                </a>
+                <a
+                  className="card-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowConfirm(true);
+                    setSelectedQuizName(Name.quiz_name);
+                    setSelectedQuizId(Name.quiz_id);
+                  }}
+                >
+                  Delete
+                </a>
+              </div>
             </div>
-            <ul className="list-group list-group-flush">
-              <li className="list-group-item">
-                No.of.Question : {Name.total_questions}
-              </li>
-              <li className="list-group-item">
-                Duration : {Name.duration_minutes} mins
-              </li>
-              <li className="list-group-item">Score : </li>
-            </ul>
-            <div className="card-body">
-              <a className="card-link" style={{ cursor: "pointer" }}>
-                Start
-              </a>
-              <a className="card-link" style={{ cursor: "pointer" }}>
-                Edit
-              </a>
-              <a
-                className="card-link"
-                style={{ cursor: "pointer" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowConfirm(true);
-                  setSelectedQuizName(Name.quiz_name);
-                  setSelectedQuizId(Name.quiz_id);
-                }}
-              >
-                Delete
-              </a>
-            </div>
-          </div>
-        );
-      });
+          ))}
+        </div>
+      );
     } else {
-      console.log("No quizes found");
-      return <p>No Quizes found !</p>;
+      return <p>No Quizzes found!</p>;
     }
   }
 
@@ -315,9 +323,8 @@ function App() {
   }
 
   function ConfirmBox({ show, handleClose, handleConfirm, message }) {
-    console.log("Called");
     return (
-      <Modal show={showConfirm} onHide={handleClose} centered size="sm">
+      <Modal show={show} onHide={handleClose} centered size="sm">
         <Modal.Body className="text-center p-4">
           <p className="mb-3">{message || "Are you sure?"}</p>
           <div className="d-flex justify-content-around">

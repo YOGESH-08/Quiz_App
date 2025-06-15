@@ -30,7 +30,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors(corsOption));
 
-
 app.post("/quize/createquiz/", async (req, res) => {
   const quizName = req.body.QuizName;
   const numberofquestions = req.body.noofquestions;
@@ -53,15 +52,8 @@ app.post("/quize/createquiz/", async (req, res) => {
 app.post(`/quize/:quizName/addquestion`, async (req, res) => {
   try {
     const { quizName } = req.params;
-    const {
-      QuestionName,
-      option1,
-      option2,
-      option3,
-      option4,
-      correctOption,
-    } = req.body;
-
+    const { QuestionName, option1, option2, option3, option4, correctOption } =
+      req.body;
 
     const quizResult = await db.query(
       "SELECT quiz_id FROM quizzes WHERE quiz_name = $1",
@@ -87,14 +79,22 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
   }
 });
 
-app.delete("/quize/:quizName/:quizId",(req,res)=>{
-  const {quizName, quizId} = req.params;
-  t
-})
-
+app.delete("/quize/delete/:quizName/:quizId", (req, res) => {
+  try {
+    const { quizName, quizId } = req.params;
+    db.query(
+      "DELETE FROM quizzes WHERE user_id=$1 AND quiz_id=$2 AND quiz_name=$3",
+      [1, quizId, quizName]
+    );
+    res.send("Successfull in Deleting !");
+  } catch (err) {
+    res.send("Error in deleteing in backend");
+    console.log(err.message);
+  }
+});
 
 app.get("/quize", async (req, res) => {
-  const user_id = 1; 
+  const user_id = 1;
   try {
     const response = await db.query(
       "SELECT quiz_id, quiz_name, total_questions, duration_minutes FROM quizzes WHERE user_id=$1",
@@ -106,7 +106,6 @@ app.get("/quize", async (req, res) => {
     res.status(500).send("Failed to fetch quizzes");
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}/quize`);
