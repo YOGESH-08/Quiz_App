@@ -93,6 +93,21 @@ app.delete("/quize/delete/:quizName/:quizId", (req, res) => {
   }
 });
 
+app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
+  try {
+    const { selectedQuizName, selectedQuizId } = req.params;
+    const response = await db.query(
+      "SELECT quizzes.quiz_name, quizzes.quiz_id, quizzes.total_questions, quizzes.duration_minutes, questions.question_id, questions.question_text, questions.option_a, questions.option_b, questions.option_c, questions.option_d, questions.correct_option FROM quizzes JOIN questions ON quizzes.quiz_id = questions.quiz_id"
+    );
+    res.send(response.rows);
+  } catch (err) {
+    console.log(
+      "error at backend:fetching editing detils from db : ",
+      err.message
+    );
+  }
+});
+
 app.get("/quize", async (req, res) => {
   const user_id = 1;
   try {

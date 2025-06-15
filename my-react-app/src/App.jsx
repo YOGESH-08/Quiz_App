@@ -13,13 +13,18 @@ function App() {
   const [createQuiz, setCreateQuiz] = useState(false);
   const [quizName, setQuizName] = useState("");
   const [numQuestions, setNumQuestions] = useState("");
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState(5);
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizlist, setQuizList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedQuizName, setSelectedQuizName] = useState("");
   const [selectedQuizId, setSelectedQuizId] = useState(0);
+  const [edit, setEdit] = useState(false);
+  const [showQuizCard, setShowQuizCard] = useState(true);
+  const [toBeUpdatedFormData, setToBeUpdatedFormData] = useState(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+
   const [formData, setFormData] = useState({
     QuestionName: "",
     option1: "",
@@ -28,6 +33,7 @@ function App() {
     option4: "",
     correctOption: "",
   });
+
   const homeScreen = async () => {
     try {
       const detailsOfQuizCreatedByUser = await axios.get(
@@ -38,12 +44,190 @@ function App() {
       );
       setQuizList(detailsOfQuizCreatedByUser.data);
       console.log(detailsOfQuizCreatedByUser.data);
+      setDuration(5);
+      setQuizName("");
+      setFormData({
+        QuestionName: "",
+        option1: "",
+        option2: "",
+        option3: "",
+        option4: "",
+        correctOption: "",
+      });
     } catch (err) {
       console.log(
         "Error in getting the names of quiz from back_end",
         err.message
       );
     }
+  };
+  async function handleEditQuizBackEnd() {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/quize/edit/${selectedQuizName}/${selectedQuizId}`
+      );
+      console.log("A-Z Details of quiz recieved sucessfully :", response.data);
+      setToBeUpdatedFormData(response.data);
+      setShowEditForm(true); 
+    } catch (err) {
+      console.log("error in editing quiz : ", err.message);
+    }
+  }
+
+  const handleEditQuiz = () => {
+    handleEditQuizBackEnd();
+    if (toBeUpdatedFormData.length > 0) {
+      return (
+        <>
+          <div className="container mt-5">
+            <div className="card shadow p-4">
+              <h4 className="mb-4 text-center text-primary">Create New Quiz</h4>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="quizName" className="form-label">
+                    Quiz Name
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="quizName"
+                    value={quizName}
+                    onChange={(e) => setQuizName(e.target.value)}
+                    placeholder="Enter quiz name"
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="numQuestions" className="form-label">
+                    Number of Questions
+                  </label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="numQuestions"
+                    value={numQuestions}
+                    onChange={(e) => setNumQuestions(e.target.value)}
+                    placeholder="Enter total number of questions"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="duration" className="form-label">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="duration"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    placeholder="Enter quiz duration"
+                    min="5"
+                    step="5"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-success w-100">
+                  Create Quiz
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="container mt-5">
+            <div className="card shadow p-4">
+              <h4 className="mb-4 text-center text-primary">
+                Edit Question {currentQuestionIndex + 1} of {numQuestions}
+              </h4>
+              <form onSubmit={handleQuestionSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Question</label>
+                  <input
+                    type="text"
+                    name="QuestionName"
+                    className="form-control"
+                    value={formData.QuestionName}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Option 1</label>
+                    <input
+                      type="text"
+                      name="option1"
+                      className="form-control"
+                      value={formData.option1}
+                      onChange={handleQuestiondetails}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Option 2</label>
+                    <input
+                      type="text"
+                      name="option2"
+                      className="form-control"
+                      value={formData.option2}
+                      onChange={handleQuestiondetails}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Option 3</label>
+                    <input
+                      type="text"
+                      name="option3"
+                      className="form-control"
+                      value={formData.option3}
+                      onChange={handleQuestiondetails}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Option 4</label>
+                    <input
+                      type="text"
+                      name="option4"
+                      className="form-control"
+                      value={formData.option4}
+                      onChange={handleQuestiondetails}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Correct Option (1–4)</label>
+                  <input
+                    type="number"
+                    name="correctOption"
+                    className="form-control"
+                    value={formData.correctOption}
+                    onChange={handleQuestiondetails}
+                    min="1"
+                    max="4"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary w-100">
+                  {currentQuestionIndex === parseInt(numQuestions) - 1
+                    ? "Finish"
+                    : "Save & Next Question"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      );
+    }
+    else return null;
   };
 
   async function handleDelete() {
@@ -60,12 +244,11 @@ function App() {
   }
 
   function quizCard() {
-    if (quizlist.length > 0) {
+    if (quizlist.length > 0 && showQuizCard) {
       return (
         <div className="d-flex flex-wrap justify-content-start gap-3">
           {quizlist.map((Name, index) => (
             <div key={index} className="card" style={{ width: "18rem" }}>
-              <img src="" className="card-img-top" alt="" />
               <div className="card-body">
                 <h2 className="card-title">{Name.quiz_name}</h2>
               </div>
@@ -82,7 +265,16 @@ function App() {
                 <a className="card-link" style={{ cursor: "pointer" }}>
                   Start
                 </a>
-                <a className="card-link" style={{ cursor: "pointer" }}>
+                <a
+                  className="card-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setEdit(true);
+                    setShowQuizCard(false);
+                    setSelectedQuizId(Name.quiz_id);
+                    setSelectedQuizName(Name.quiz_name);
+                  }}
+                >
                   Edit
                 </a>
                 <a
@@ -102,7 +294,7 @@ function App() {
           ))}
         </div>
       );
-    } else {
+    } else if (showQuizCard && quizlist.length == 0) {
       return <p>No Quizzes found!</p>;
     }
   }
@@ -369,6 +561,8 @@ function App() {
                   onClick={() => {
                     setShowCreateQOptWindow(false);
                     setCreateQuiz(false);
+                    setShowQuizCard(true);
+                    setEdit(false);
                   }}
                 >
                   Home
@@ -437,6 +631,7 @@ function App() {
       </nav>
       {getInpForNewQuiz()}
       {quizQOptWindow()}
+      {edit ? handleEditQuiz() : null}
       {!createQuiz && !showCreateQOptWindow && quizCard()}
       <div>
         {showConfirm ? (
