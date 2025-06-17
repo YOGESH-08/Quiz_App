@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
@@ -24,6 +24,9 @@ function App() {
   const [showQuizCard, setShowQuizCard] = useState(true);
   const [toBeUpdatedFormData, setToBeUpdatedFormData] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [upDuration, setUpDuration] = useState();
+  const [upName, setUpName] = useState();
+  const [upNum, setUpNum] = useState();
 
   const [formData, setFormData] = useState({
     QuestionName: "",
@@ -61,174 +64,214 @@ function App() {
       );
     }
   };
+
   async function handleEditQuizBackEnd() {
     try {
       const response = await axios.get(
         `http://localhost:8080/quize/edit/${selectedQuizName}/${selectedQuizId}`
       );
-      console.log("A-Z Details of quiz recieved sucessfully :", response.data);
+      console.log("Got the quiz editing details", response.data);
       setToBeUpdatedFormData(response.data);
-      setShowEditForm(true); 
     } catch (err) {
       console.log("error in editing quiz : ", err.message);
     }
   }
-
-  const handleEditQuiz = () => {
-    handleEditQuizBackEnd();
-    if (toBeUpdatedFormData.length > 0) {
-      return (
-        <>
-          <div className="container mt-5">
-            <div className="card shadow p-4">
-              <h4 className="mb-4 text-center text-primary">Create New Quiz</h4>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="quizName" className="form-label">
-                    Quiz Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="quizName"
-                    value={quizName}
-                    onChange={(e) => setQuizName(e.target.value)}
-                    placeholder="Enter quiz name"
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="numQuestions" className="form-label">
-                    Number of Questions
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="numQuestions"
-                    value={numQuestions}
-                    onChange={(e) => setNumQuestions(e.target.value)}
-                    placeholder="Enter total number of questions"
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="duration" className="form-label">
-                    Duration (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="duration"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="Enter quiz duration"
-                    min="5"
-                    step="5"
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-success w-100">
-                  Create Quiz
-                </button>
-              </form>
-            </div>
-          </div>
-          <div className="container mt-5">
-            <div className="card shadow p-4">
-              <h4 className="mb-4 text-center text-primary">
-                Edit Question {currentQuestionIndex + 1} of {numQuestions}
-              </h4>
-              <form onSubmit={handleQuestionSubmit}>
-                <div className="mb-3">
-                  <label className="form-label">Question</label>
-                  <input
-                    type="text"
-                    name="QuestionName"
-                    className="form-control"
-                    value={formData.QuestionName}
-                    onChange={handleQuestiondetails}
-                    required
-                  />
-                </div>
-
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Option 1</label>
-                    <input
-                      type="text"
-                      name="option1"
-                      className="form-control"
-                      value={formData.option1}
-                      onChange={handleQuestiondetails}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Option 2</label>
-                    <input
-                      type="text"
-                      name="option2"
-                      className="form-control"
-                      value={formData.option2}
-                      onChange={handleQuestiondetails}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Option 3</label>
-                    <input
-                      type="text"
-                      name="option3"
-                      className="form-control"
-                      value={formData.option3}
-                      onChange={handleQuestiondetails}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Option 4</label>
-                    <input
-                      type="text"
-                      name="option4"
-                      className="form-control"
-                      value={formData.option4}
-                      onChange={handleQuestiondetails}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Correct Option (1–4)</label>
-                  <input
-                    type="number"
-                    name="correctOption"
-                    className="form-control"
-                    value={formData.correctOption}
-                    onChange={handleQuestiondetails}
-                    min="1"
-                    max="4"
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary w-100">
-                  {currentQuestionIndex === parseInt(numQuestions) - 1
-                    ? "Finish"
-                    : "Save & Next Question"}
-                </button>
-              </form>
-            </div>
-          </div>
-        </>
-      );
+  useEffect(() => {
+    if (edit && toBeUpdatedFormData) {
+      setUpDuration(toBeUpdatedFormData[editingIndex].duration_minutes);
+      setUpName(toBeUpdatedFormData[editingIndex].quiz_name);
+      setUpNum(toBeUpdatedFormData[editingIndex].total_questions);
     }
-    else return null;
-  };
+  }, [edit, toBeUpdatedFormData]);
+
+  const [editingIndex, setEditingIndex] = useState(0);
+
+  function editform() {
+    return (
+      <>
+        <div className="container mt-5">
+          <div className="card shadow p-4">
+            <h4 className="mb-4 text-center text-primary">
+              Edit Quiz {`${toBeUpdatedFormData[editingIndex].quiz_name}`}
+            </h4>
+            <form onSubmit={handleEditSubmit}>
+              <div className="mb-3">
+                <label htmlFor="quizName" className="form-label">
+                  Quiz Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="quizName"
+                  value={upName}
+                  onChange={(e) => setUpName(e.target.value)}
+                  placeholder="Enter quiz name"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="numQuestions" className="form-label">
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  id="numQuestions"
+                  value={upNum}
+                  onChange={(e) => setUpNum(e.target.value)}
+                  placeholder="Enter total number of questions"
+                  min="1"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="duration" className="form-label">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  id="duration"
+                  value={upDuration}
+                  onChange={(e) => setUpDuration(e.target.value)}
+                  placeholder="Enter quiz duration"
+                  min="5"
+                  step="5"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-success w-100">
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="container mt-5">
+          <div className="card shadow p-4">
+            <h4 className="mb-4 text-center text-primary">
+              Edit Question {editingIndex + 1} of{" "}
+              {toBeUpdatedFormData[editingIndex].total_questions}
+            </h4> 
+            <form onSubmit={handleEditedQuestionSubmit}>
+              <div className="mb-3">
+                <label className="form-label">Question</label>
+                <input
+                  type="text"
+                  name="QuestionName"
+                  className="form-control"
+                  value={toBeUpdatedFormData[editingIndex].question_text}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 1</label>
+                  <input
+                    type="text"
+                    name="option1"
+                    className="form-control"
+                    value={toBeUpdatedFormData[editingIndex].option_a}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 2</label>
+                  <input
+                    type="text"
+                    name="option2"
+                    className="form-control"
+                    value={toBeUpdatedFormData[editingIndex].option_b}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 3</label>
+                  <input
+                    type="text"
+                    name="option3"
+                    className="form-control"
+                    value={toBeUpdatedFormData[editingIndex].option_c}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 4</label>
+                  <input
+                    type="text"
+                    name="option4"
+                    className="form-control"
+                    value={toBeUpdatedFormData[editingIndex].option_d}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Correct Option (1–4)</label>
+                <input
+                  type="number"
+                  name="correctOption"
+                  className="form-control"
+                  value={toBeUpdatedFormData[editingIndex].correct_option}
+                  onChange={handleQuestiondetails}
+                  min="1"
+                  max="4"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary w-100">
+                {currentQuestionIndex === parseInt(numQuestions) - 1
+                  ? "Finish"
+                  : "Save & Next"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  async function handleEditedQuestionSubmit(e) {
+    e.preventDefault();
+    try {
+      // const response = await axios.put(
+      //   `/quize/${toBeUpdatedFormData.quiz_name}/${toBeUpdatedFormData.quiz_id}/${toBeUpdatedFormData.question_id}/edit`,
+      //   {
+      //     formData,
+      //   }
+      // );
+      console.log("Edited questions sent successfully");
+      const nextIndex = editingIndex + 1;
+      if (nextIndex < parseInt(toBeUpdatedFormData.total_questions)) {
+        setEditingIndex(nextIndex);
+        setFormData({
+          QuestionName: "",
+          option1: "",
+          option2: "",
+          option3: "",
+          option4: "",
+          correctOption: "",
+        });
+      } else {
+        alert("All questions updated");
+        setEditingIndex(0);
+        setEdit(false);
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
 
   async function handleDelete() {
     setShowConfirm(false);
@@ -332,6 +375,23 @@ function App() {
       }
     } catch (err) {
       console.error("Error submitting question:", err);
+    }
+  }
+
+  async function handleEditSubmit(e) {
+    e.preventDefault();
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/quize/edit/${selectedQuizName}/details/update`,
+        {
+          QuizName: quizName,
+          noofquestions: numQuestions,
+          duration: duration,
+        }
+      );
+      console.log("Editing request sent succssfully", response.data);
+    } catch (err) {
+      console.log(err.messgae);
     }
   }
 
@@ -631,7 +691,17 @@ function App() {
       </nav>
       {getInpForNewQuiz()}
       {quizQOptWindow()}
-      {edit ? handleEditQuiz() : null}
+      {useEffect(() => {
+        if (edit) {
+          handleEditQuizBackEnd();
+        }
+      }, [edit])}
+
+      {/* {useEffect(() => {
+        if (showEditForm) {
+        }
+      }, [showEditForm])} */}
+
       {!createQuiz && !showCreateQOptWindow && quizCard()}
       <div>
         {showConfirm ? (
@@ -642,6 +712,10 @@ function App() {
             message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
           />
         ) : null}
+      </div>
+
+      <div>
+        <div>{edit && toBeUpdatedFormData && editform()}</div>
       </div>
 
       <footer className="bg-body-tertiary text-center">

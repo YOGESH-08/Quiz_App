@@ -96,17 +96,47 @@ app.delete("/quize/delete/:quizName/:quizId", (req, res) => {
 app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
   try {
     const { selectedQuizName, selectedQuizId } = req.params;
+
     const response = await db.query(
-      "SELECT quizzes.quiz_name, quizzes.quiz_id, quizzes.total_questions, quizzes.duration_minutes, questions.question_id, questions.question_text, questions.option_a, questions.option_b, questions.option_c, questions.option_d, questions.correct_option FROM quizzes JOIN questions ON quizzes.quiz_id = questions.quiz_id"
+      `SELECT 
+         quizzes.quiz_name, 
+         quizzes.quiz_id, 
+         quizzes.total_questions, 
+         quizzes.duration_minutes, 
+         questions.question_id, 
+         questions.question_text, 
+         questions.option_a, 
+         questions.option_b, 
+         questions.option_c, 
+         questions.option_d, 
+         questions.correct_option 
+       FROM quizzes 
+       JOIN questions ON quizzes.quiz_id = questions.quiz_id 
+       WHERE quizzes.quiz_id = $1 AND quizzes.quiz_name = $2`,
+      [selectedQuizId, selectedQuizName]
     );
+
     res.send(response.rows);
   } catch (err) {
-    console.log(
-      "error at backend:fetching editing detils from db : ",
-      err.message
-    );
+    console.log("Error at backend while fetching edit details:", err.message);
+    res.status(500).send("Failed to fetch quiz data");
   }
 });
+
+app.put("/quize/edit/:selectedQuizName/details/update", (req, res) => {
+  try {
+    const selectedQuizName = req.params;
+    const { updatedQuizName, updatedQuizNumberOfQues, updatedQuizDuration } =
+      req.body;
+
+      res.send("Got the details to be updated in db successfully");
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+
+
 
 app.get("/quize", async (req, res) => {
   const user_id = 1;
