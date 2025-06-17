@@ -10,9 +10,9 @@ function App() {
     homeScreen();
   }, []);
 
-  const [createQuiz, setCreateQuiz] = useState(false);
   const [quizName, setQuizName] = useState("");
   const [numQuestions, setNumQuestions] = useState("");
+  const [prevNum, setPrevNum] = useState(numQuestions);
   const [duration, setDuration] = useState(5);
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -36,7 +36,7 @@ function App() {
     option4: "",
     correctOption: "",
   });
-
+  const [createQuiz, setCreateQuiz] = useState(false);
   const homeScreen = async () => {
     try {
       const detailsOfQuizCreatedByUser = await axios.get(
@@ -76,23 +76,34 @@ function App() {
       console.log("error in editing quiz : ", err.message);
     }
   }
+
+  const [editingIndex, setEditingIndex] = useState(0);
   useEffect(() => {
     if (edit && toBeUpdatedFormData) {
+      const current = toBeUpdatedFormData[editingIndex];
+      setFormData({
+        QuestionName: current.question_text || "",
+        option1: current.option_a || "",
+        option2: current.option_b || "",
+        option3: current.option_c || "",
+        option4: current.option_d || "",
+        correctOption: current.correct_option || 1,
+      });
       setUpDuration(toBeUpdatedFormData[editingIndex].duration_minutes);
       setUpName(toBeUpdatedFormData[editingIndex].quiz_name);
       setUpNum(toBeUpdatedFormData[editingIndex].total_questions);
     }
-  }, [edit, toBeUpdatedFormData]);
-
-  const [editingIndex, setEditingIndex] = useState(0);
+  }, [editingIndex, toBeUpdatedFormData]);
 
   function editform() {
+    if (!toBeUpdatedFormData || !toBeUpdatedFormData[editingIndex])
+      return <p>Loading...</p>;
     return (
       <>
         <div className="container mt-5">
           <div className="card shadow p-4">
             <h4 className="mb-4 text-center text-primary">
-              Edit Quiz {`${toBeUpdatedFormData[editingIndex].quiz_name}`}
+              Edit Quiz {toBeUpdatedFormData?.[editingIndex]?.quiz_name || " "}
             </h4>
             <form onSubmit={handleEditSubmit}>
               <div className="mb-3">
@@ -103,7 +114,7 @@ function App() {
                   type="text"
                   className="form-control"
                   id="quizName"
-                  value={upName}
+                  value={upName || ""}
                   onChange={(e) => setUpName(e.target.value)}
                   placeholder="Enter quiz name"
                   required
@@ -115,13 +126,14 @@ function App() {
                   Number of Questions
                 </label>
                 <input
+                  min={numQuestions || 1}
+                  max={numQuestions || 1}
                   type="number"
                   className="form-control"
                   id="numQuestions"
                   value={upNum}
                   onChange={(e) => setUpNum(e.target.value)}
                   placeholder="Enter total number of questions"
-                  min="1"
                   required
                 />
               </div>
@@ -153,9 +165,8 @@ function App() {
         <div className="container mt-5">
           <div className="card shadow p-4">
             <h4 className="mb-4 text-center text-primary">
-              Edit Question {editingIndex + 1} of{" "}
-              {toBeUpdatedFormData[editingIndex].total_questions}
-            </h4> 
+              Edit Question {editingIndex + 1} of {upNum}
+            </h4>
             <form onSubmit={handleEditedQuestionSubmit}>
               <div className="mb-3">
                 <label className="form-label">Question</label>
@@ -163,7 +174,7 @@ function App() {
                   type="text"
                   name="QuestionName"
                   className="form-control"
-                  value={toBeUpdatedFormData[editingIndex].question_text}
+                  value={formData.QuestionName || ""}
                   onChange={handleQuestiondetails}
                   required
                 />
@@ -176,7 +187,7 @@ function App() {
                     type="text"
                     name="option1"
                     className="form-control"
-                    value={toBeUpdatedFormData[editingIndex].option_a}
+                    value={formData.option1 || ""}
                     onChange={handleQuestiondetails}
                     required
                   />
@@ -187,7 +198,7 @@ function App() {
                     type="text"
                     name="option2"
                     className="form-control"
-                    value={toBeUpdatedFormData[editingIndex].option_b}
+                    value={formData.option2 || ""}
                     onChange={handleQuestiondetails}
                     required
                   />
@@ -198,7 +209,7 @@ function App() {
                     type="text"
                     name="option3"
                     className="form-control"
-                    value={toBeUpdatedFormData[editingIndex].option_c}
+                    value={formData.option3 || ""}
                     onChange={handleQuestiondetails}
                     required
                   />
@@ -209,7 +220,7 @@ function App() {
                     type="text"
                     name="option4"
                     className="form-control"
-                    value={toBeUpdatedFormData[editingIndex].option_d}
+                    value={formData.option4 || ""}
                     onChange={handleQuestiondetails}
                     required
                   />
@@ -222,7 +233,7 @@ function App() {
                   type="number"
                   name="correctOption"
                   className="form-control"
-                  value={toBeUpdatedFormData[editingIndex].correct_option}
+                  value={formData.correctOption || ""}
                   onChange={handleQuestiondetails}
                   min="1"
                   max="4"
@@ -231,7 +242,7 @@ function App() {
               </div>
 
               <button type="submit" className="btn btn-primary w-100">
-                {currentQuestionIndex === parseInt(numQuestions) - 1
+                {editingIndex === parseInt(upNum) - 1
                   ? "Finish"
                   : "Save & Next"}
               </button>
@@ -251,9 +262,9 @@ function App() {
       //     formData,
       //   }
       // );
-      console.log("Edited questions sent successfully");
+      console.log("Edited questions sent successfully :Q.no: ", editingIndex);
       const nextIndex = editingIndex + 1;
-      if (nextIndex < parseInt(toBeUpdatedFormData.total_questions)) {
+      if (nextIndex < parseInt(upNum)) {
         setEditingIndex(nextIndex);
         setFormData({
           QuestionName: "",
@@ -267,6 +278,8 @@ function App() {
         alert("All questions updated");
         setEditingIndex(0);
         setEdit(false);
+        await homeScreen();
+        setShowQuizCard(true);
       }
     } catch (err) {
       console.log(err.message);
@@ -382,13 +395,14 @@ function App() {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `http://localhost:8080/quize/edit/${selectedQuizName}/details/update`,
+        `http://localhost:8080/quize/edit/${selectedQuizName}/${selectedQuizId}/details/update`,
         {
-          QuizName: quizName,
-          noofquestions: numQuestions,
-          duration: duration,
+          updatedQuizName: upName,
+          updatedQuizNumberOfQues: upNum,
+          updatedQuizDuration: upDuration,
         }
       );
+      handleEditQuizBackEnd();
       console.log("Editing request sent succssfully", response.data);
     } catch (err) {
       console.log(err.messgae);

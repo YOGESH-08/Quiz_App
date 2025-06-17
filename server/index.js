@@ -116,6 +116,9 @@ app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
       [selectedQuizId, selectedQuizName]
     );
 
+
+    
+
     res.send(response.rows);
   } catch (err) {
     console.log("Error at backend while fetching edit details:", err.message);
@@ -123,20 +126,30 @@ app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
   }
 });
 
-app.put("/quize/edit/:selectedQuizName/details/update", (req, res) => {
-  try {
-    const selectedQuizName = req.params;
-    const { updatedQuizName, updatedQuizNumberOfQues, updatedQuizDuration } =
-      req.body;
+app.put(
+  "/quize/edit/:selectedQuizName/:selectedQuizId/details/update",
+  async (req, res) => {
+    try {
+      const { selectedQuizName, selectedQuizId } = req.params;
+      const { updatedQuizName, updatedQuizNumberOfQues, updatedQuizDuration } =
+        req.body;
+      const response = await db.query(
+        `UPDATE quizzes SET quiz_name = $1,total_questions = $2,duration_minutes = $3 WHERE quiz_id = $4`,
+        [
+          updatedQuizName,
+          updatedQuizNumberOfQues,
+          updatedQuizDuration,
+          selectedQuizId,
+        ]
+      );
+      res.status(200).send("updated Name NUm And Duration in db successfully");
 
-      res.send("Got the details to be updated in db successfully");
-  } catch (err) {
-    console.log(err.message);
+    } catch (err) {
+      console.log(err.message);
+      res.status(500).send("Error");
+    }
   }
-});
-
-
-
+);
 
 app.get("/quize", async (req, res) => {
   const user_id = 1;
