@@ -11,7 +11,7 @@ function App() {
   }, []);
 
   const [quizName, setQuizName] = useState("");
-  const [numQuestions, setNumQuestions] = useState("");
+  const [numQuestions, setNumQuestions] = useState(0);
   const [prevNum, setPrevNum] = useState(numQuestions);
   const [duration, setDuration] = useState(5);
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
@@ -68,7 +68,7 @@ function App() {
   async function handleEditQuizBackEnd() {
     try {
       const response = await axios.get(
-        `http://localhost:8080/quize/edit/${selectedQuizName}/${selectedQuizId}`
+        `http://localhost:8080/quize/edit/${selectedQuizId}`
       );
       console.log("Got the quiz editing details", response.data);
       setToBeUpdatedFormData(response.data);
@@ -89,9 +89,9 @@ function App() {
         option4: current.option_d || "",
         correctOption: current.correct_option || 1,
       });
-      setUpDuration(toBeUpdatedFormData[editingIndex].duration_minutes);
-      setUpName(toBeUpdatedFormData[editingIndex].quiz_name);
-      setUpNum(toBeUpdatedFormData[editingIndex].total_questions);
+      setUpDuration(current.duration_minutes);
+      setUpName(current.quiz_name);
+      setUpNum(current.total_questions);
     }
   }, [editingIndex, toBeUpdatedFormData]);
 
@@ -126,8 +126,8 @@ function App() {
                   Number of Questions
                 </label>
                 <input
-                  min={numQuestions || 1}
-                  max={numQuestions || 1}
+                  min={numQuestions}
+                  max={numQuestions}
                   type="number"
                   className="form-control"
                   id="numQuestions"
@@ -256,12 +256,10 @@ function App() {
   async function handleEditedQuestionSubmit(e) {
     e.preventDefault();
     try {
-      // const response = await axios.put(
-      //   `/quize/${toBeUpdatedFormData.quiz_name}/${toBeUpdatedFormData.quiz_id}/${toBeUpdatedFormData.question_id}/edit`,
-      //   {
-      //     formData,
-      //   }
-      // );
+      const response = await axios.put(
+        `http://localhost:8080/quize/${toBeUpdatedFormData[editingIndex].quiz_id}/${toBeUpdatedFormData[editingIndex].question_id}/edit`,
+        formData
+      );
       console.log("Edited questions sent successfully :Q.no: ", editingIndex);
       const nextIndex = editingIndex + 1;
       if (nextIndex < parseInt(upNum)) {
@@ -329,6 +327,7 @@ function App() {
                     setShowQuizCard(false);
                     setSelectedQuizId(Name.quiz_id);
                     setSelectedQuizName(Name.quiz_name);
+                    setNumQuestions(Name.total_questions);
                   }}
                 >
                   Edit

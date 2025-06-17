@@ -93,9 +93,9 @@ app.delete("/quize/delete/:quizName/:quizId", (req, res) => {
   }
 });
 
-app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
+app.get("/quize/edit/:selectedQuizId", async (req, res) => {
   try {
-    const { selectedQuizName, selectedQuizId } = req.params;
+    const selectedQuizId = req.params.selectedQuizId;
 
     const response = await db.query(
       `SELECT 
@@ -112,17 +112,45 @@ app.get("/quize/edit/:selectedQuizName/:selectedQuizId", async (req, res) => {
          questions.correct_option 
        FROM quizzes 
        JOIN questions ON quizzes.quiz_id = questions.quiz_id 
-       WHERE quizzes.quiz_id = $1 AND quizzes.quiz_name = $2`,
-      [selectedQuizId, selectedQuizName]
+       WHERE quizzes.quiz_id = $1`,
+      [selectedQuizId]
     );
-
-
-    
 
     res.send(response.rows);
   } catch (err) {
     console.log("Error at backend while fetching edit details:", err.message);
     res.status(500).send("Failed to fetch quiz data");
+  }
+});
+
+app.put("/quize/:quizId/:questionId/edit", async (req, res) => {
+  try {
+    const { quizId, questionId } = req.params ;
+    const updatedForm = req.body;
+    const { QuestionName, option1, option2, option3, option4, correctOption } =
+      updatedForm;
+
+    await db.query(
+      `UPDATE questions 
+       SET question_text = $1, option_a = $2, option_b = $3, option_c = $4, option_d = $5, correct_option = $6 
+       WHERE quiz_id = $7 AND question_id = $8`,
+      [
+        QuestionName,
+        option1,
+        option2,
+        option3,
+        option4,
+        correctOption,
+        quizId,
+        questionId,
+      ]
+    );
+
+    console.log("Successfully updated question");
+    res.status(200).send("Question updated");
+  } catch (err) {
+    console.error("Error updating question:", err);
+    res.status(500).send("Error saving question updates in DB");
   }
 });
 
@@ -143,7 +171,6 @@ app.put(
         ]
       );
       res.status(200).send("updated Name NUm And Duration in db successfully");
-
     } catch (err) {
       console.log(err.message);
       res.status(500).send("Error");
