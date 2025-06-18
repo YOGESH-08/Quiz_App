@@ -41,7 +41,9 @@ app.post("/quize/createquiz/", async (req, res) => {
       "INSERT INTO quizzes(user_id, quiz_name, total_questions, duration_minutes) VALUES ($1, $2, $3, $4)",
       [user_id, quizName, numberofquestions, duration]
     );
-    console.log("Successfully added to database (quiz details Name , duration and numofquestions)");
+    console.log(
+      "Successfully added to database (quiz details Name , duration and numofquestions)"
+    );
     res.send("Quiz created successfully!");
   } catch (err) {
     console.error(err.message);
@@ -125,7 +127,7 @@ app.get("/quize/edit/:selectedQuizId", async (req, res) => {
 
 app.put("/quize/:quizId/:questionId/edit", async (req, res) => {
   try {
-    const { quizId, questionId } = req.params ;
+    const { quizId, questionId } = req.params;
     const updatedForm = req.body;
     const { QuestionName, option1, option2, option3, option4, correctOption } =
       updatedForm;
@@ -189,6 +191,21 @@ app.get("/quize", async (req, res) => {
   } catch (err) {
     console.error("Error fetching quizzes:", err.message);
     res.status(500).send("Failed to fetch quizzes");
+  }
+});
+
+app.put("/quize/addquestions/edit/:selectedQuizId", async (req, res) => {
+  try {
+    const selectedQuizId = parseInt(req.params.selectedQuizId);
+    const { updatedNum } = req.body;
+    await db.query(
+      "UPDATE quizzes SET total_questions = $1 WHERE quiz_id = $2",
+      [parseInt(updatedNum), selectedQuizId]
+    );
+    res.status(200).send("Number of questions updated.");
+  } catch (err) {
+    console.error("🔥 Error updating question:", err.stack);
+    res.status(500).send("Internal Server Error");
   }
 });
 

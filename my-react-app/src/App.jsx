@@ -24,9 +24,12 @@ function App() {
   const [showQuizCard, setShowQuizCard] = useState(true);
   const [toBeUpdatedFormData, setToBeUpdatedFormData] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [upDuration, setUpDuration] = useState();
-  const [upName, setUpName] = useState();
+  const [upDuration, setUpDuration] = useState(5);
+  const [upName, setUpName] = useState(0);
+
+  const [addQs, setAddQs] = useState(false);
   const [upNum, setUpNum] = useState();
+  const [selectedQuizNum, setSelectedQuizNum] = useState(0);
 
   const [formData, setFormData] = useState({
     QuestionName: "",
@@ -340,9 +343,23 @@ function App() {
                     setShowConfirm(true);
                     setSelectedQuizName(Name.quiz_name);
                     setSelectedQuizId(Name.quiz_id);
+                    console.log(selectedQuizId);
                   }}
                 >
                   Delete
+                </a>
+                <a
+                  className="card-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setAddQs(true);
+                    setShowQuizCard(false);
+                    setSelectedQuizId(Name.quiz_id);
+                    setSelectedQuizNum(Name.total_questions);
+                    setUpName(Name.duration_minutes);
+                  }}
+                >
+                  Add-Q
                 </a>
               </div>
             </div>
@@ -352,6 +369,154 @@ function App() {
     } else if (showQuizCard && quizlist.length == 0) {
       return <p>No Quizzes found!</p>;
     }
+  }
+
+  useEffect(() => {
+    console.log("selected quizid NUm of questions: ", selectedQuizNum);
+  }, [selectedQuizId, selectedQuizNum]);
+
+  async function handleAddQuestionSubmit(e) {
+    e.preventDefault();
+    try {
+      if (!upNum || isNaN(upNum)) {
+        console.error("Invalid upNum:", upNum);
+        return;
+      }
+      const response = await axios.put(
+        `http://localhost:8080/quize/addquestions/edit/${selectedQuizId}`,
+        { updatedNum: Number(upNum) }
+      );
+      console.log(response.data);
+    } catch (err) {
+      console.log("Error in changing num of questions(Frontend message) ");
+    }
+  }
+
+  function addQuestions() {
+    return (
+      <>
+        <div className="container mt-5">
+          <div className="card shadow p-4">
+            <h4 className="mb-4 text-center text-primary">
+              Add Questions{" "}
+              {toBeUpdatedFormData?.[editingIndex]?.quiz_name || " "}
+            </h4>
+            <form onSubmit={handleAddQuestionSubmit}>
+              <div className="mb-3">
+                <label htmlFor="numQuestions" className="form-label">
+                  Number of Questions
+                </label>
+                <input
+                  min={selectedQuizNum + 1}
+                  max={100}
+                  type="number"
+                  className="form-control"
+                  id="numQuestions"
+                  value={upNum ?? ""}
+                  onChange={(e) => {
+                    setUpNum(Number(e.target.value));
+                  }}
+                  placeholder="Enter total number of questions"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-success w-100">
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="container mt-5">
+          <div className="card shadow p-4">
+            <h4 className="mb-4 text-center text-primary">
+              Create Question {selectedQuizNum + 1} of {upNum}
+            </h4>
+            <form onSubmit={handleEditedQuestionSubmit}>
+              <div className="mb-3">
+                <label className="form-label">Question</label>
+                <input
+                  type="text"
+                  name="QuestionName"
+                  className="form-control"
+                  value={formData.QuestionName || ""}
+                  onChange={handleQuestiondetails}
+                  required
+                />
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 1</label>
+                  <input
+                    type="text"
+                    name="option1"
+                    className="form-control"
+                    value={formData.option1 || ""}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 2</label>
+                  <input
+                    type="text"
+                    name="option2"
+                    className="form-control"
+                    value={formData.option2 || ""}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 3</label>
+                  <input
+                    type="text"
+                    name="option3"
+                    className="form-control"
+                    value={formData.option3 || ""}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Option 4</label>
+                  <input
+                    type="text"
+                    name="option4"
+                    className="form-control"
+                    value={formData.option4 || ""}
+                    onChange={handleQuestiondetails}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Correct Option (1–4)</label>
+                <input
+                  type="number"
+                  name="correctOption"
+                  className="form-control"
+                  value={formData.correctOption || ""}
+                  onChange={handleQuestiondetails}
+                  min="1"
+                  max="4"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary w-100">
+                {editingIndex === parseInt(upNum) - 1
+                  ? "Finish"
+                  : "Save & Next"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </>
+    );
   }
 
   function handleQuestiondetails(e) {
@@ -735,6 +900,7 @@ function App() {
           />
         ) : null}
       </div>
+      <div>{addQs ? addQuestions() : null}</div>
 
       <div>
         <div>{edit && toBeUpdatedFormData && editform()}</div>
