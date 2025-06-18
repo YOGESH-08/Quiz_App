@@ -11,7 +11,7 @@ function App() {
   }, []);
 
   const [quizName, setQuizName] = useState("");
-  const [numQuestions, setNumQuestions] = useState(0);
+  const [numQuestions, setNumQuestions] = useState();
   const [prevNum, setPrevNum] = useState(numQuestions);
   const [duration, setDuration] = useState(5);
   const [showCreateQOptWindow, setShowCreateQOptWindow] = useState(false);
@@ -26,7 +26,7 @@ function App() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [upDuration, setUpDuration] = useState(5);
   const [upName, setUpName] = useState(0);
-
+  const [addingIndex, setAddingIndex] = useState(0);
   const [addQs, setAddQs] = useState(false);
   const [upNum, setUpNum] = useState();
   const [selectedQuizNum, setSelectedQuizNum] = useState(0);
@@ -249,11 +249,63 @@ function App() {
                   ? "Finish"
                   : "Save & Next"}
               </button>
+              <button
+                onClick={handleEditDeleteQuestionSubmit}
+                className="btn btn-primary w-100"
+                style={{ marginTop: "8px" }}
+              >
+                Delete Question
+              </button>
             </form>
           </div>
         </div>
       </>
     );
+  }
+
+  async function handleEditDeleteQuestionSubmit(e) {
+    e.preventDefault();
+    try {
+      // console.log("Message : ");
+      // console.log(toBeUpdatedFormData[editingIndex]);
+      // console.log(editingIndex);
+      const current = toBeUpdatedFormData[editingIndex];
+      const selectedQuestionId = current.question_id;
+      // console.log("selected question id  = ",selectedQuestionId);
+      const response = await axios.delete(
+        `http://localhost:8080/quize/delete/${selectedQuestionId}`,
+        {
+          data: { quiz_id: current.quiz_id },
+        }
+      );
+      console.log(
+        "Successfully request sent to backend to delete the question",
+        response.data
+      );
+      setUpNum((prev) => prev - 1);
+      const nextIndex = editingIndex + 1;
+      if (nextIndex < parseInt(upNum)) {
+        setEditingIndex(nextIndex);
+
+        setFormData({
+          QuestionName: "",
+          option1: "",
+          option2: "",
+          option3: "",
+          option4: "",
+          correctOption: "",
+        });
+      } else {
+        setUpNum((prev) => prev - 1);
+        alert("All questions updated");
+        setEditingIndex(0);
+        setEdit(false);
+        await homeScreen();
+        setShowQuizCard(true);
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   async function handleEditedQuestionSubmit(e) {
@@ -356,7 +408,7 @@ function App() {
                     setShowQuizCard(false);
                     setSelectedQuizId(Name.quiz_id);
                     setSelectedQuizNum(Name.total_questions);
-                    setUpName(Name.duration_minutes);
+                    setUpNum(Name.total_questions);
                   }}
                 >
                   Add-Q
@@ -375,13 +427,42 @@ function App() {
     console.log("selected quizid NUm of questions: ", selectedQuizNum);
   }, [selectedQuizId, selectedQuizNum]);
 
+  async function handleAddeddQuestionSubmit(e) {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/quize/addquestions/edit/${selectedQuizId}`,
+        formData
+      );
+      console.log("Success", response.data);
+      setAddingIndex((prev) => {
+        const next = prev + 1;
+        if (next < parseInt(upNum) - 1) {
+          setFormData({
+            QuestionName: "",
+            option1: "",
+            option2: "",
+            option3: "",
+            option4: "",
+            correctOption: "",
+          });
+        } else {
+          alert("All questions Added");
+          setAddQs(false);
+          setShowQuizCard(true);
+          setAddingIndex(0);
+          setNumQuestions(upName);
+          homeScreen().then(() => setShowQuizCard(true));
+        }
+      });
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
   async function handleAddQuestionSubmit(e) {
     e.preventDefault();
     try {
-      if (!upNum || isNaN(upNum)) {
-        console.error("Invalid upNum:", upNum);
-        return;
-      }
       const response = await axios.put(
         `http://localhost:8080/quize/addquestions/edit/${selectedQuizId}`,
         { updatedNum: Number(upNum) }
@@ -412,7 +493,7 @@ function App() {
                   type="number"
                   className="form-control"
                   id="numQuestions"
-                  value={upNum ?? ""}
+                  value={upNum}
                   onChange={(e) => {
                     setUpNum(Number(e.target.value));
                   }}
@@ -433,7 +514,7 @@ function App() {
             <h4 className="mb-4 text-center text-primary">
               Create Question {selectedQuizNum + 1} of {upNum}
             </h4>
-            <form onSubmit={handleEditedQuestionSubmit}>
+            <form onSubmit={handleAddeddQuestionSubmit}>
               <div className="mb-3">
                 <label className="form-label">Question</label>
                 <input

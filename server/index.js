@@ -204,8 +204,46 @@ app.put("/quize/addquestions/edit/:selectedQuizId", async (req, res) => {
     );
     res.status(200).send("Number of questions updated.");
   } catch (err) {
-    console.error("🔥 Error updating question:", err.stack);
+    console.error(" Error updating question:", err.stack);
     res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/quize/addquestions/edit/:quiz_id", async (req, res) => {
+  try {
+    const { quiz_id } = req.params;
+    const { QuestionName, option1, option2, option3, option4, correctOption } =
+      req.body;
+    await db.query(
+      "INSERT INTO questions (quiz_id,question_text,option_a,option_b,option_c,option_d,correct_option)VALUES($1,$2,$3,$4,$5,$6,$7)",
+      [quiz_id, QuestionName, option1, option2, option3, option4, correctOption]
+    );
+    console.log("Sucessfully added extra questions");
+    res.status(200).send("Success");
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Error in saving the extra questions");
+  }
+});
+
+app.delete("/quize/delete/:question_id", async (req, res) => {
+  const { question_id } = req.params;
+  const { quiz_id } = req.body;
+
+  try {
+    await db.query("DELETE FROM questions WHERE question_id = $1", [
+      question_id,
+    ]);
+
+    await db.query(
+      "UPDATE quizzes SET total_questions = total_questions - 1 WHERE quiz_id = $1",
+      [quiz_id]
+    );
+
+    res.status(200).send("Question deleted and quiz count updated");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error deleting question");
   }
 });
 
