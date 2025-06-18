@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useState, useRef } from "react";
 import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
@@ -365,7 +365,7 @@ function App() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `http://localhost:8080/quize/${quizName}/addquestion`,
+        `http://localhost:8080/quize/${quizNameRef.current}/addquestion`,
         formData
       );
       console.log("Question sent to backend:", response.data);
@@ -390,6 +390,13 @@ function App() {
     }
   }
 
+  const quizNameRef = useRef("");
+
+  function handleQuizNameInput(e) {
+    quizNameRef.current = e.target.value;
+    setQuizName(e.target.value);
+  }
+
   async function handleEditSubmit(e) {
     e.preventDefault();
     try {
@@ -411,6 +418,7 @@ function App() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
+      setQuizName(quizName);
       const response = await axios.post(
         "http://localhost:8080/quize/createquiz",
         {
@@ -423,6 +431,7 @@ function App() {
       console.log("Server response (QuizName):", response.data);
       setCreateQuiz(false);
       setShowCreateQOptWindow(true);
+      setQuizName(quizName);
     } catch (err) {
       console.log(err.message);
     }
@@ -445,7 +454,7 @@ function App() {
                 className="form-control"
                 id="quizName"
                 value={quizName}
-                onChange={(e) => setQuizName(e.target.value)}
+                onChange={handleQuizNameInput}
                 placeholder="Enter quiz name"
                 required
               />

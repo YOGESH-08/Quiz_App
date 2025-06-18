@@ -41,7 +41,7 @@ app.post("/quize/createquiz/", async (req, res) => {
       "INSERT INTO quizzes(user_id, quiz_name, total_questions, duration_minutes) VALUES ($1, $2, $3, $4)",
       [user_id, quizName, numberofquestions, duration]
     );
-    console.log("Successfully added to database (quiz details)");
+    console.log("Successfully added to database (quiz details Name , duration and numofquestions)");
     res.send("Quiz created successfully!");
   } catch (err) {
     console.error(err.message);
