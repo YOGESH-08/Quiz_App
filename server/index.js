@@ -20,7 +20,7 @@ db.connect();
 const port = process.env.PORT;
 
 const corsOption = {
-  origin: ["http://localhost:5174"],
+  origin: ["http://localhost:5173"],
 };
 
 const app = express();

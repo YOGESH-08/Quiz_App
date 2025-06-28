@@ -31,7 +31,7 @@ function App() {
   const [addQs, setAddQs] = useState(false);
   const [upNum, setUpNum] = useState();
   const [selectedQuizNum, setSelectedQuizNum] = useState(0);
-
+const [startQuiz, setStartQuiz] = useState(false);
   const [formData, setFormData] = useState({
     QuestionName: "",
     option1: "",
@@ -372,7 +372,8 @@ function App() {
                 <li className="list-group-item">Score:</li>
               </ul>
               <div className="card-body">
-                <a className="card-link" style={{ cursor: "pointer" }}>
+                <a className="card-link" style={{ cursor: "pointer" }}
+                onClick={() => {setStartQuiz(true);setShowQuizCard(false);}} >
                   Start
                 </a>
                 <a
@@ -861,7 +862,17 @@ function App() {
       </Modal>
     );
   }
-
+function quizeWindow() {
+  if (!startQuiz) return null;
+  else{
+    return (
+      <div className="quiz-window">
+        <h2>Quiz in Progress</h2>
+        {/* Quiz questions and options go here */}
+      </div>
+    );
+  }
+}
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -966,6 +977,7 @@ function App() {
           handleEditQuizBackEnd();
         }
       }, [edit])}
+      {startQuiz && quizeWindow()}
 
       {/* {useEffect(() => {
         if (showEditForm) {
