@@ -20,7 +20,7 @@ db.connect();
 const port = process.env.PORT;
 
 const corsOption = {
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5174"],
 };
 
 const app = express();
@@ -57,6 +57,17 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
     const { QuestionName, option1, option2, option3, option4, correctOption } =
       req.body;
 
+    if (
+      !QuestionName ||
+      !option1 ||
+      !option2 ||
+      !option3 ||
+      !option4 ||
+      !correctOption
+    ) {
+      return res.status(400).send("All fields are required");
+    }
+
     const quizResult = await db.query(
       "SELECT quiz_id FROM quizzes WHERE quiz_name = $1",
       [quizName]
@@ -84,6 +95,13 @@ app.post(`/quize/:quizName/addquestion`, async (req, res) => {
 app.delete("/quize/delete/:quizName/:quizId", (req, res) => {
   try {
     const { quizName, quizId } = req.params;
+
+    // Only allows one or more digits (no leading zeros unless the ID is 0)
+    const quizIdRegex = /^[1-9][0-9]*$/;
+
+    if (!quizIdRegex.test(quizId)) {
+      return res.status(404).send("Enter valid quiz ID");
+    }
     db.query(
       "DELETE FROM quizzes WHERE user_id=$1 AND quiz_id=$2 AND quiz_name=$3",
       [1, quizId, quizName]

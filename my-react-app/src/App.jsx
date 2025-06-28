@@ -3,6 +3,7 @@ import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 function App() {
   useEffect(() => {
@@ -687,6 +688,7 @@ function App() {
     if (!createQuiz) return null;
 
     return (
+      
       <div className="container mt-5">
         <div className="card shadow p-4">
           <h4 className="mb-4 text-center text-primary">Create New Quiz</h4>
@@ -896,9 +898,9 @@ function App() {
                   Home
                 </a>
               </li>
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <a className="nav-link">Import</a>
-              </li>
+              </li> */}
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
@@ -1018,7 +1020,7 @@ function App() {
             <a
               className="btn text-white btn-floating m-1"
               style={{ backgroundColor: "#ac2bac" }}
-              href="#!"
+              href="https://www.instagram.com/?hl=en"
               role="button"
             >
               <i className="fab fa-instagram"></i>
@@ -1026,7 +1028,7 @@ function App() {
             <a
               className="btn text-white btn-floating m-1"
               style={{ backgroundColor: "#0082ca" }}
-              href="#!"
+              href="https://www.linkedin.com/in/yogesh-kumar-n-853084310/"
               role="button"
             >
               <i className="fab fa-linkedin-in"></i>
@@ -1034,7 +1036,7 @@ function App() {
             <a
               className="btn text-white btn-floating m-1"
               style={{ backgroundColor: "#333333" }}
-              href="#!"
+              href="https://github.com/YOGESH-08"
               role="button"
             >
               <i className="fab fa-github"></i>
