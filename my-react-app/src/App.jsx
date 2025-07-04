@@ -939,7 +939,10 @@ if (
     score: sc,
     total_questions: quizData.length
   })
-  .then(res => console.log("Score saved:", res.data))
+   .then(res => {
+    console.log("Score saved:", res.data);
+    homeScreen(); 
+  })
   .catch(err => console.error("Score save failed:", err.message));
 }
 
