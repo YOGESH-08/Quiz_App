@@ -50,7 +50,33 @@ app.post("/quize/createquiz/", async (req, res) => {
     res.status(500).send("Failed to create quiz");
   }
 });
+app.post("/quize/submit-score", async (req, res) => {
+  const { quiz_id, score, total_questions } = req.body;
 
+  try {
+    await db.query(
+      "INSERT INTO scores (quiz_id, score, total_questions) VALUES ($1, $2, $3)",
+      [quiz_id, score, total_questions]
+    );
+    res.status(200).send("Score saved successfully");
+  } catch (err) {
+    console.error("Error saving score:", err.message);
+    res.status(500).send("Failed to save score");
+  }
+});
+
+app.get("/quize/start/:selectedQuizId",async(req,res)=>{
+  try{
+
+    const {selectedQuizId} = req.params;
+    const response = await db.query("SELECT question_text, option_a, option_b, option_c, option_d, correct_option FROM questions WHERE quiz_id = $1",[selectedQuizId]);
+    res.send(response.rows);
+    console.log("successfully fetched question details for quiz start");
+  }
+  catch(err){
+    console.log("error in getting questions to start the quiz : \n",err.message);
+  }
+})
 app.post(`/quize/:quizName/addquestion`, async (req, res) => {
   try {
     const { quizName } = req.params;
@@ -199,18 +225,23 @@ app.put(
 );
 
 app.get("/quize", async (req, res) => {
-  const user_id = 1;
   try {
-    const response = await db.query(
-      "SELECT quiz_id, quiz_name, total_questions, duration_minutes FROM quizzes WHERE user_id=$1",
-      [user_id]
-    );
-    res.send(response.rows);
+    const result = await db.query(`
+      SELECT q.*, s.score
+      FROM quizzes q
+      LEFT JOIN (
+        SELECT DISTINCT ON (quiz_id) quiz_id, score
+        FROM scores
+        ORDER BY quiz_id, submitted_at DESC
+      ) s ON q.quiz_id = s.quiz_id
+    `);
+    res.send(result.rows);
   } catch (err) {
-    console.error("Error fetching quizzes:", err.message);
-    res.status(500).send("Failed to fetch quizzes");
+    res.status(500).send("Error fetching quizzes with scores");
   }
 });
+
+
 
 app.put("/quize/addquestions/edit/:selectedQuizId", async (req, res) => {
   try {

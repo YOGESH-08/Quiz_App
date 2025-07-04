@@ -18,6 +18,15 @@ footer {
   margin-top: auto;
   height: 100px;
 }
+.quiz-window {
+  max-width: 700px;
+  margin: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0px 0px 10px #ccc;
+  padding: 25px;
+}
+
 
 .createnewquizwindow{
     display: flex;
