@@ -3,7 +3,8 @@ import "./App.css";
 import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoginForm from "./LoginForm";
 
 function App() {
   useEffect(() => {
@@ -1006,19 +1007,18 @@ function formatTime(secs) {
      return (
   <div
     className="d-flex justify-content-center align-items-start"
-    style={{ gap: "40px", padding: "40px", position: "relative" }}
+    style={{ gap: "40px", padding: "40px", position: "relative", height: "100vh" }}
   >
-    {/* Quiz Card */}
     <div
       className="shadow-sm p-4 bg-white rounded position-relative"
       style={{
+        height: "80vh",
         width: "700px",
         borderRadius: "16px",
         boxShadow: "0 0 12px rgba(0,0,0,0.1)",
         backgroundColor: "#fff",
       }}
     >
-      {/* TIMER */}
       <div
         style={{
           position: "absolute",
@@ -1028,13 +1028,11 @@ function formatTime(secs) {
           color: "#dc3545",
         }}
       >
-        ⏱ {formatTime(timeLeft)}
+        {formatTime(timeLeft)}
       </div>
 
       <p className="mb-1">Question {currentQuestionIndex + 1} of {quizData.length}</p>
       <h5 className="mb-4 fw-bold">{quizData[currentQuestionIndex]?.question_text}</h5>
-
-      {/* Options */}
       <div className="row">
         {["A", "B", "C", "D"].map((optKey) => {
           const optValue = quizData[currentQuestionIndex][`option_${optKey.toLowerCase()}`];
@@ -1057,8 +1055,7 @@ function formatTime(secs) {
         })}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="d-flex flex-wrap gap-2 mt-3">
+      <div className="d-flex flex-wrap gap-5 mt-5">
         <button className="btn btn-danger" onClick={skipQuestion}>Skip</button>
         <button className="btn btn-secondary" onClick={clearSelectedOption}>Clear Option</button>
         <button
@@ -1073,8 +1070,6 @@ function formatTime(secs) {
         <button className="btn btn-success" onClick={handleSubmitQuiz}>Submit</button>
       </div>
     </div>
-
-    {/* Number Box */}
     <div
       className="shadow-sm p-3 bg-white rounded"
       style={{
@@ -1114,8 +1109,6 @@ function formatTime(secs) {
         </div>
       ))}
     </div>
-
-    {/* Result Modal */}
     {showModal && (
       <div
         style={{
@@ -1140,7 +1133,7 @@ function formatTime(secs) {
             textAlign: "center",
           }}
         >
-          <h4>Quiz Complete!</h4>
+          <h4>Quiz Completed!</h4>
           <p>Your Score: {score} / {quizData.length}</p>
           <button className="btn btn-primary mt-3" onClick={() => {setShowModal(false);
             setShowQuizCard(true);
@@ -1339,6 +1332,7 @@ function formatTime(secs) {
         >
           © 2025 Copyright
         </div>
+        <LoginForm />
       </footer>
     </>
   );
