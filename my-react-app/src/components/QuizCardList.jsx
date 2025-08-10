@@ -12,6 +12,7 @@ function QuizCardList({
   setAddQs,
   setSelectedQuizNum,
   setUpNum,
+  handleEditQuizBackEnd, // <-- Receive the function as a prop
 }) {
   if (quizCardList.length > 0) {
     return (
@@ -48,11 +49,12 @@ function QuizCardList({
                 className="card-link"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  setEdit(true);
-                  setShowQuizCard(false);
                   setSelectedQuizId(Name.quiz_id);
                   setSelectedQuizName(Name.quiz_name);
                   setNumQuestions(Name.total_questions);
+                  setUpNum(Name.total_questions); // <-- Set upNum here
+                  setEdit(true);
+                  handleEditQuizBackEnd(Name.quiz_id);
                 }}
               >
                 Edit

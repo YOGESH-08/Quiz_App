@@ -6,6 +6,12 @@ import { Modal, Button } from "react-bootstrap";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import QuizCardList from "./components/QuizCardList";
+import QuizForm from "./components/QuizForm";
+import QuestionForm from "./components/QuestionForm";
+import EditQuiz from "./components/EditQuiz";
+import AddQuestions from "./components/AddQuestions";
+import QuizWindow from "./components/QuizWindow";
+import ConfirmBox from "./components/ConfirmBox";
 
 function App() {
   useEffect(() => {
@@ -34,12 +40,12 @@ function App() {
   const [upNum, setUpNum] = useState();
   const [selectedOptions, setSelectedOptions] = useState({});
   const [selectedQuizNum, setSelectedQuizNum] = useState(0);
-const [startQuiz, setStartQuiz] = useState(false);
-const [selectedOption, setSelectedOption] = useState(null);
-const [quizData, setQuizData] = useState([]);
-const [questionStatus, setQuestionStatus] = useState({});
-const [showModal, setShowModal] = useState(false);
-const [score, setScore] = useState(0);
+  const [startQuiz, setStartQuiz] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [quizData, setQuizData] = useState([]);
+  const [questionStatus, setQuestionStatus] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [score, setScore] = useState(0);
   const [formData, setFormData] = useState({
     QuestionName: "",
     option1: "",
@@ -77,10 +83,10 @@ const [score, setScore] = useState(0);
     }
   };
 
-  async function handleEditQuizBackEnd() {
+  async function handleEditQuizBackEnd(quizId) {
     try {
       const response = await axios.get(
-        `http://localhost:8080/quize/edit/${selectedQuizId}`
+        `http://localhost:8080/quize/edit/${quizId}`
       );
       console.log("Got the quiz editing details", response.data);
       setToBeUpdatedFormData(response.data);
@@ -91,7 +97,12 @@ const [score, setScore] = useState(0);
 
   const [editingIndex, setEditingIndex] = useState(0);
   useEffect(() => {
-    if (edit && toBeUpdatedFormData) {
+    if (
+      edit &&
+      toBeUpdatedFormData &&
+      Array.isArray(toBeUpdatedFormData) &&
+      toBeUpdatedFormData[editingIndex]
+    ) {
       const current = toBeUpdatedFormData[editingIndex];
       setFormData({
         QuestionName: current.question_text || "",
@@ -105,11 +116,12 @@ const [score, setScore] = useState(0);
       setUpName(current.quiz_name);
       setUpNum(current.total_questions);
     }
-  }, [editingIndex, toBeUpdatedFormData]);
+  }, [editingIndex, toBeUpdatedFormData, edit]);
 
   function editform() {
-    if (!toBeUpdatedFormData || !toBeUpdatedFormData[editingIndex])
-      return <p>Loading...</p>;
+    if (!toBeUpdatedFormData || toBeUpdatedFormData.length === 0)
+      return <p className="text-center mt-5 text-danger">No questions found for this quiz.</p>;
+
     return (
       <>
         <div className="container mt-5">
@@ -361,8 +373,6 @@ const [score, setScore] = useState(0);
     }
   }
 
-  
-
   useEffect(() => {
     console.log("selected quizid NUm of questions: ", selectedQuizNum);
   }, [selectedQuizId, selectedQuizNum]);
@@ -549,9 +559,15 @@ const [score, setScore] = useState(0);
 
   async function handleQuestionSubmit(e) {
     e.preventDefault();
+    // Fallback to quizName if quizNameRef.current is empty
+    const quizNameToUse = quizNameRef.current || quizName;
+    if (!quizNameToUse) {
+      alert("Quiz name is missing. Please create a quiz first.");
+      return;
+    }
     try {
       const response = await axios.post(
-        `http://localhost:8080/quize/${quizNameRef.current}/addquestion`,
+        `http://localhost:8080/quize/${quizNameToUse}/addquestion`,
         formData
       );
       console.log("Question sent to backend:", response.data);
@@ -605,6 +621,7 @@ const [score, setScore] = useState(0);
     e.preventDefault();
     try {
       setQuizName(quizName);
+      quizNameRef.current = quizName; // <-- Ensure quizNameRef is set!
       const response = await axios.post(
         "http://localhost:8080/quize/createquiz",
         {
@@ -627,7 +644,6 @@ const [score, setScore] = useState(0);
     if (!createQuiz) return null;
 
     return (
-      
       <div className="container mt-5">
         <div className="card shadow p-4">
           <h4 className="mb-4 text-center text-primary">Create New Quiz</h4>
@@ -801,125 +817,122 @@ const [score, setScore] = useState(0);
     );
   }
 
-
-async function fetchQuestions(){
-  try
- { const response = await axios.get(`http://localhost:8080/quize/start/${selectedQuizId}`);
-  setQuizData(response.data);
- }
- catch(err){
-  console.log(err.message);
-}
-}
-useEffect(() => {
-  setCurrentQuestionIndex(0);
-  fetchQuestions();
-  setSelectedOption(null);
-  setSelectedOptions({});
-  setQuestionStatus({});
-}, [startQuiz, selectedQuizId]);
-
-function handleOptionClick(option) {
-  setSelectedOption(option);
-  setSelectedOptions({ ...selectedOptions, [currentQuestionIndex]: option });
-  setQuestionStatus({ ...questionStatus, [currentQuestionIndex]: "answered" });
-}
-function clearSelectedOption() {
-  setSelectedOption(null);
-  const updated = { ...selectedOptions };
-  delete updated[currentQuestionIndex];
-  setSelectedOptions(updated);
-
-  const updatedStatus = { ...questionStatus };
-  delete updatedStatus[currentQuestionIndex];
-  setQuestionStatus(updatedStatus);
-}
-
-
-function skipQuestion() {
-  setQuestionStatus({ ...questionStatus, [currentQuestionIndex]: "skipped" });
-  goToNext();
-}
-function goToNext() {
-  if (currentQuestionIndex + 1 < quizData.length) {
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
-    setSelectedOption(selectedOptions[currentQuestionIndex + 1] || null);
+  async function fetchQuestions() {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/quize/start/${selectedQuizId}`
+      );
+      setQuizData(response.data);
+    } catch (err) {
+      console.log(err.message);
+    }
   }
-}
-function handleSubmitQuiz() {
-  let sc = 0;
-  quizData.forEach((q, idx) => {
-    const selected = selectedOptions[idx];
-   const optionMap = { A: 1, B: 2, C: 3, D: 4 };
-if (
-  selected &&
-  optionMap[selected.toUpperCase()] === Number(q.correct_option)
-) {
-  sc++;
-}
+  useEffect(() => {
+    setCurrentQuestionIndex(0);
+    fetchQuestions();
+    setSelectedOption(null);
+    setSelectedOptions({});
+    setQuestionStatus({});
+  }, [startQuiz, selectedQuizId]);
 
-  });
-
-  setScore(sc);
-  setShowModal(true);
-
-
-  axios.post("http://localhost:8080/quize/submit-score", {
-    quiz_id: selectedQuizId,
-    score: sc,
-    total_questions: quizData.length
-  })
-   .then(res => {
-    console.log("Score saved:", res.data);
-    homeScreen(); 
-  })
-  .catch(err => console.error("Score save failed:", err.message));
-}
-
-function getStatusColor(idx) {
-  switch (questionStatus[idx]) {
-    case "answered":
-      return "green";
-    case "skipped":
-      return "red";
-    case "review":
-      return "violet";
-    default:
-      return "#ccc";
+  function handleOptionClick(option) {
+    setSelectedOption(option);
+    setSelectedOptions({ ...selectedOptions, [currentQuestionIndex]: option });
+    setQuestionStatus({ ...questionStatus, [currentQuestionIndex]: "answered" });
   }
-}const circle = (color) => ({
-  display: "inline-block",
-  width: "12px",
-  height: "12px",
-  borderRadius: "50%",
-  backgroundColor: color,
-  marginRight: "5px",
-});
-const [timeLeft, setTimeLeft] = useState(duration * 60); // seconds
+  function clearSelectedOption() {
+    setSelectedOption(null);
+    const updated = { ...selectedOptions };
+    delete updated[currentQuestionIndex];
+    setSelectedOptions(updated);
 
-useEffect(() => {
-  if (!startQuiz) return;
-  const interval = setInterval(() => {
-    setTimeLeft((prev) => {
-      if (prev <= 1) {
-        clearInterval(interval);
-        handleSubmitQuiz(); // auto submit
-        return 0;
+    const updatedStatus = { ...questionStatus };
+    delete updatedStatus[currentQuestionIndex];
+    setQuestionStatus(updatedStatus);
+  }
+
+
+  function skipQuestion() {
+    setQuestionStatus({ ...questionStatus, [currentQuestionIndex]: "skipped" });
+    goToNext();
+  }
+  function goToNext() {
+    if (currentQuestionIndex + 1 < quizData.length) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(selectedOptions[currentQuestionIndex + 1] || null);
+    }
+  }
+  function handleSubmitQuiz() {
+    let sc = 0;
+    quizData.forEach((q, idx) => {
+      const selected = selectedOptions[idx];
+      const optionMap = { A: 1, B: 2, C: 3, D: 4 };
+      if (
+        selected &&
+        optionMap[selected.toUpperCase()] === Number(q.correct_option)
+      ) {
+        sc++;
       }
-      return prev - 1;
     });
-  }, 1000);
-  return () => clearInterval(interval);
-}, [startQuiz]);
 
-function formatTime(secs) {
-  const m = String(Math.floor(secs / 60)).padStart(2, "0");
-  const s = String(secs % 60).padStart(2, "0");
-  return `${m}:${s}`;
-}
+    setScore(sc);
+    setShowModal(true);
 
+    axios
+      .post("http://localhost:8080/quize/submit-score", {
+        quiz_id: selectedQuizId,
+        score: sc,
+        total_questions: quizData.length,
+      })
+      .then((res) => {
+        console.log("Score saved:", res.data);
+        homeScreen();
+      })
+      .catch((err) => console.error("Score save failed:", err.message));
+  }
 
+  function getStatusColor(idx) {
+    switch (questionStatus[idx]) {
+      case "answered":
+        return "green";
+      case "skipped":
+        return "red";
+      case "review":
+        return "violet";
+      default:
+        return "#ccc";
+    }
+  }
+  const circle = (color) => ({
+    display: "inline-block",
+    width: "12px",
+    height: "12px",
+    borderRadius: "50%",
+    backgroundColor: color,
+    marginRight: "5px",
+  });
+  const [timeLeft, setTimeLeft] = useState(duration * 60); // seconds
 
+  useEffect(() => {
+    if (!startQuiz) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleSubmitQuiz(); // auto submit
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [startQuiz]);
+
+  function formatTime(secs) {
+    const m = String(Math.floor(secs / 60)).padStart(2, "0");
+    const s = String(secs % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
 
   function quizeWindow() {
     if (!startQuiz || quizData.length === 0) return null;
@@ -933,203 +946,287 @@ function formatTime(secs) {
       { key: "D", value: question.option_d },
     ];
 
-     return (
-  <div
-    className="d-flex justify-content-center align-items-start"
-    style={{ gap: "40px", padding: "40px", position: "relative", height: "100vh" }}
-  >
-    <div
-      className="shadow-sm p-4 bg-white rounded position-relative"
-      style={{
-        height: "80vh",
-        width: "700px",
-        borderRadius: "16px",
-        boxShadow: "0 0 12px rgba(0,0,0,0.1)",
-        backgroundColor: "#fff",
-      }}
-    >
+    return (
       <div
+        className="d-flex justify-content-center align-items-start"
         style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          fontWeight: "bold",
-          color: "#dc3545",
+          gap: "40px",
+          padding: "40px",
+          position: "relative",
+          height: "100vh",
         }}
       >
-        {formatTime(timeLeft)}
-      </div>
+        <div
+          className="shadow-sm p-4 bg-white rounded position-relative"
+          style={{
+            height: "80vh",
+            width: "700px",
+            borderRadius: "16px",
+            boxShadow: "0 0 12px rgba(0,0,0,0.1)",
+            backgroundColor: "#fff",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              fontWeight: "bold",
+              color: "#dc3545",
+            }}
+          >
+            {formatTime(timeLeft)}
+          </div>
 
-      <p className="mb-1">Question {currentQuestionIndex + 1} of {quizData.length}</p>
-      <h5 className="mb-4 fw-bold">{quizData[currentQuestionIndex]?.question_text}</h5>
-      <div className="row">
-        {["A", "B", "C", "D"].map((optKey) => {
-          const optValue = quizData[currentQuestionIndex][`option_${optKey.toLowerCase()}`];
-          return (
-            <div key={optKey} className="col-6 mb-3">
+          <p className="mb-1">
+            Question {currentQuestionIndex + 1} of {quizData.length}
+          </p>
+          <h5 className="mb-4 fw-bold">
+            {quizData[currentQuestionIndex]?.question_text}
+          </h5>
+          <div className="row">
+            {["A", "B", "C", "D"].map((optKey) => {
+              const optValue = quizData[currentQuestionIndex][
+                `option_${optKey.toLowerCase()}`
+              ];
+              return (
+                <div key={optKey} className="col-6 mb-3">
+                  <button
+                    onClick={() => handleOptionClick(optKey)}
+                    className="btn w-100 text-start"
+                    style={{
+                      backgroundColor:
+                        selectedOption === optKey ? "#a0e7a0" : "#f0f0f0",
+                      fontWeight:
+                        selectedOption === optKey ? "bold" : "normal",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    {optKey}. {optValue}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="d-flex flex-wrap gap-5 mt-5">
+            <button className="btn btn-danger" onClick={skipQuestion}>
+              Skip
+            </button>
+            <button className="btn btn-secondary" onClick={clearSelectedOption}>
+              Clear Option
+            </button>
+            <button
+              className="btn btn-outline-dark"
+              onClick={() =>
+                setCurrentQuestionIndex(Math.max(currentQuestionIndex - 1, 0))
+              }
+            >
+              Previous
+            </button>
+            <button className="btn btn-primary" onClick={goToNext}>
+              Next
+            </button>
+            <button className="btn btn-success" onClick={handleSubmitQuiz}>
+              Submit
+            </button>
+          </div>
+        </div>
+        <div
+          className="shadow-sm p-3 bg-white rounded"
+          style={{
+            width: "90px",
+            maxHeight: "400px",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+            borderRadius: "12px",
+            boxShadow: "0 0 10px rgba(0,0,0,0.15)",
+          }}
+        >
+          {quizData.map((_, idx) => (
+            <div
+              key={idx}
+              onClick={() => {
+                setCurrentQuestionIndex(idx);
+                setSelectedOption(selectedOptions[idx] || null);
+              }}
+              style={{
+                width: "30px",
+                height: "30px",
+                borderRadius: "50%",
+                backgroundColor: getStatusColor(idx),
+                color: "#fff",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "14px",
+              }}
+            >
+              {idx + 1}
+            </div>
+          ))}
+        </div>
+        {showModal && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              height: "100vh",
+              width: "100vw",
+              background: "rgba(0,0,0,0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: "30px",
+                borderRadius: "12px",
+                width: "300px",
+                textAlign: "center",
+              }}
+            >
+              <h4>Quiz Completed!</h4>
+              <p>
+                Your Score: {score} / {quizData.length}
+              </p>
               <button
-                onClick={() => handleOptionClick(optKey)}
-                className="btn w-100 text-start"
-                style={{
-                  backgroundColor: selectedOption === optKey ? "#a0e7a0" : "#f0f0f0",
-                  fontWeight: selectedOption === optKey ? "bold" : "normal",
-                  borderRadius: "8px",
-                  border: "1px solid #ccc"
+                className="btn btn-primary mt-3"
+                onClick={() => {
+                  setShowModal(false);
+                  setShowQuizCard(true);
+                  setStartQuiz(false);
+                  setAddQs(false);
+                  setEdit(false);
+                  setShowCreateQOptWindow(false);
+                  setQuizData([]);
+                  setCurrentQuestionIndex(0);
+                  setSelectedOption(null);
+                  setSelectedOptions({});
+                  setQuestionStatus({});
+                  setScore(0);
+                  homeScreen();
                 }}
               >
-                {optKey}. {optValue}
+                Close
               </button>
             </div>
-          );
-        })}
+          </div>
+        )}
       </div>
-
-      <div className="d-flex flex-wrap gap-5 mt-5">
-        <button className="btn btn-danger" onClick={skipQuestion}>Skip</button>
-        <button className="btn btn-secondary" onClick={clearSelectedOption}>Clear Option</button>
-        <button
-          className="btn btn-outline-dark"
-          onClick={() =>
-            setCurrentQuestionIndex(Math.max(currentQuestionIndex - 1, 0))
-          }
-        >
-          Previous
-        </button>
-        <button className="btn btn-primary" onClick={goToNext}>Next</button>
-        <button className="btn btn-success" onClick={handleSubmitQuiz}>Submit</button>
-      </div>
-    </div>
-    <div
-      className="shadow-sm p-3 bg-white rounded"
-      style={{
-        width: "90px",
-        maxHeight: "400px",
-        overflowY: "auto",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "10px",
-        borderRadius: "12px",
-        boxShadow: "0 0 10px rgba(0,0,0,0.15)"
-      }}
-    >
-      {quizData.map((_, idx) => (
-        <div
-          key={idx}
-          onClick={() => {
-            setCurrentQuestionIndex(idx);
-            setSelectedOption(selectedOptions[idx] || null);
-          }}
-          style={{
-            width: "30px",
-            height: "30px",
-            borderRadius: "50%",
-            backgroundColor: getStatusColor(idx),
-            color: "#fff",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "14px",
-          }}
-        >
-          {idx + 1}
-        </div>
-      ))}
-    </div>
-    {showModal && (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          height: "100vh",
-          width: "100vw",
-          background: "rgba(0,0,0,0.5)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            padding: "30px",
-            borderRadius: "12px",
-            width: "300px",
-            textAlign: "center",
-          }}
-        >
-          <h4>Quiz Completed!</h4>
-          <p>Your Score: {score} / {quizData.length}</p>
-          <button className="btn btn-primary mt-3" onClick={() => {setShowModal(false);
-            setShowQuizCard(true);
-            setStartQuiz(false);
-
-          }}>Close</button>
-        </div>
-      </div>
-    )}
-  </div>
-);
-
-
+    );
   }
   return (
     <>
-      <Navbar 
-      setCreateQuiz = {setCreateQuiz}
-      navStates = {()=>{
-        setShowCreateQOptWindow(false);
-        setShowQuizCard(true);
-        setCreateQuiz(false);
-        setEdit(false);
-      }}
+      <Navbar
+        setCreateQuiz={setCreateQuiz}
+        navStates={() => {
+          setShowCreateQOptWindow(false);
+          setShowQuizCard(true);
+          setCreateQuiz(false);
+          setEdit(false);
+          setAddQs(false);
+          setStartQuiz(false);
+          setToBeUpdatedFormData(null);
+          setCurrentQuestionIndex(0);
+          setSelectedQuizId(0);
+          setSelectedQuizName("");
+          setScore(0);
+          setShowModal(false); // <-- Add this line
+        }}
       />
-      {getInpForNewQuiz()}
-      {quizQOptWindow()}
-      {showQuizCard && (
-  <QuizCardList
-    quizCardList={quizlist}
-    setStartQuiz={setStartQuiz}
-    setShowQuizCard={setShowQuizCard}
-    setSelectedQuizId={setSelectedQuizId}
-    setEdit={setEdit}
-    setSelectedQuizName={setSelectedQuizName}
-    setNumQuestions={setNumQuestions}
-    setShowConfirm={setShowConfirm}
-    setAddQs={setAddQs}
-    setSelectedQuizNum={setSelectedQuizNum}
-    setUpNum={setUpNum}
-  />
-)}
-      {useEffect(() => {
-        if (edit) {
-          handleEditQuizBackEnd();
-        }
-      }, [edit])}
+      {createQuiz && (
+        <QuizForm
+          quizName={quizName}
+          numQuestions={numQuestions}
+          duration={duration}
+          setQuizName={setQuizName}
+          setNumQuestions={setNumQuestions}
+          setDuration={setDuration}
+          handleSubmit={handleSubmit}
+        />
+      )}
+      {showCreateQOptWindow && (
+        <QuestionForm
+          currentQuestionIndex={currentQuestionIndex}
+          numQuestions={numQuestions}
+          formData={formData}
+          handleQuestiondetails={handleQuestiondetails}
+          handleQuestionSubmit={handleQuestionSubmit}
+        />
+      )}
+      {showQuizCard && !showCreateQOptWindow && !addQs && !edit && !startQuiz && (
+        <QuizCardList
+          quizCardList={quizlist}
+          setStartQuiz={setStartQuiz}
+          setShowQuizCard={setShowQuizCard}
+          setSelectedQuizId={setSelectedQuizId}
+          setEdit={setEdit}
+          setSelectedQuizName={setSelectedQuizName}
+          setNumQuestions={setNumQuestions}
+          setShowConfirm={setShowConfirm}
+          setAddQs={setAddQs}
+          setSelectedQuizNum={setSelectedQuizNum}
+          setUpNum={setUpNum}
+          handleEditQuizBackEnd={handleEditQuizBackEnd}
+        />
+      )}
+      {edit && toBeUpdatedFormData && (
+        <EditQuiz
+          editingIndex={editingIndex}
+          toBeUpdatedFormData={toBeUpdatedFormData}
+          upName={upName}
+          upNum={upNum}
+          upDuration={upDuration}
+          setUpName={setUpName}
+          setUpNum={setUpNum}
+          setUpDuration={setUpDuration}
+          formData={formData}
+          handleQuestiondetails={handleQuestiondetails}
+          handleEditSubmit={handleEditSubmit}
+          handleEditedQuestionSubmit={handleEditedQuestionSubmit}
+          handleEditDeleteQuestionSubmit={handleEditDeleteQuestionSubmit}
+        />
+      )}
+      {addQs && (
+        <AddQuestions
+          toBeUpdatedFormData={toBeUpdatedFormData}
+          editingIndex={editingIndex}
+          selectedQuizNum={selectedQuizNum}
+          upNum={upNum}
+          setUpNum={setUpNum}
+          formData={formData}
+          handleQuestiondetails={handleQuestiondetails}
+          handleAddQuestionSubmit={handleAddQuestionSubmit}
+          handleAddeddQuestionSubmit={handleAddeddQuestionSubmit}
+        />
+      )}
       {startQuiz && quizeWindow()}
-
-      {!createQuiz && !showCreateQOptWindow && showQuizCard}
-      <div>
-        {showConfirm ? (
-          <ConfirmBox
-            show={showConfirm}
-            handleClose={() => setShowConfirm(false)}
-            handleConfirm={handleDelete}
-            message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
-          />
-        ) : null}
-      </div>
-      <div>{addQs ? addQuestions() : null}</div>
-
-      <div>
-        <div>{edit && toBeUpdatedFormData && editform()}</div>
-      </div>
-
-      <footer className="bg-body-tertiary text-center">
+      <ConfirmBox
+        show={showConfirm}
+        handleClose={() => setShowConfirm(false)}
+        handleConfirm={handleDelete}
+        message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
+      />
+      {/* <footer
+        className="bg-body-tertiary text-center"
+        style={{
+          position: "fixed",
+          left: 0,
+          bottom: 0,
+          width: "100%",
+        }}
+      >
         <div className="container p-4 pb-0">
           <section className="mb-4">
             <a
@@ -1190,7 +1287,7 @@ function formatTime(secs) {
         >
           © 2025 Copyright
         </div>
-      </footer>
+      </footer> */}
     </>
   );
 }
