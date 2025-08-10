@@ -12,13 +12,13 @@ import EditQuiz from "./components/EditQuiz";
 import AddQuestions from "./components/AddQuestions";
 import QuizWindow from "./components/QuizWindow";
 import ConfirmBox from "./components/ConfirmBox";
+import Signup from "./components/Signup";
+import Signin from "./components/Signin";
 
 function App() {
-  useEffect(() => {
-    initMDB({ Ripple });
-    homeScreen();
-  }, []);
-
+  const [authenticated, setAuthenticated] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [createQuiz, setCreateQuiz] = useState(false);
   const [quizName, setQuizName] = useState("");
   const [numQuestions, setNumQuestions] = useState();
   const [prevNum, setPrevNum] = useState(numQuestions);
@@ -46,6 +46,7 @@ function App() {
   const [questionStatus, setQuestionStatus] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [score, setScore] = useState(0);
+  const [editingIndex, setEditingIndex] = useState(0);
   const [formData, setFormData] = useState({
     QuestionName: "",
     option1: "",
@@ -54,8 +55,31 @@ function App() {
     option4: "",
     correctOption: "",
   });
-  const [createQuiz, setCreateQuiz] = useState(false);
-  const homeScreen = async () => {
+  // if (!authenticated) {
+  //   return (
+  //     <div
+  //       className="d-flex flex-column align-items-center justify-content-center"
+  //       style={{
+  //         background: "#f8f9fa"
+  //       }}
+  //     >
+  //       {showSignup ? (
+  //         <Signup onAuthenticated={() => setAuthenticated(true)} />
+  //       ) : (
+  //         <Signin onAuthenticated={() => setAuthenticated(true)} />
+  //       )}
+  //               <div className="mb-4">
+  //         <button className="btn btn-primary me-2" onClick={() => setShowSignup(false)}>
+  //           Sign In
+  //         </button>
+  //         <button className="btn btn-success" onClick={() => setShowSignup(true)}>
+  //           Sign Up
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+    const homeScreen = async () => {
     try {
       const detailsOfQuizCreatedByUser = await axios.get(
         "http://localhost:8080/quize"
@@ -83,6 +107,12 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    initMDB({ Ripple });
+    homeScreen();
+  }, []);
+
+
   async function handleEditQuizBackEnd(quizId) {
     try {
       const response = await axios.get(
@@ -95,7 +125,6 @@ function App() {
     }
   }
 
-  const [editingIndex, setEditingIndex] = useState(0);
   useEffect(() => {
     if (
       edit &&
@@ -1127,169 +1156,141 @@ function App() {
     );
   }
   return (
-    <>
-      <Navbar
-        setCreateQuiz={setCreateQuiz}
-        navStates={() => {
-          setShowCreateQOptWindow(false);
-          setShowQuizCard(true);
-          setCreateQuiz(false);
-          setEdit(false);
-          setAddQs(false);
-          setStartQuiz(false);
-          setToBeUpdatedFormData(null);
-          setCurrentQuestionIndex(0);
-          setSelectedQuizId(0);
-          setSelectedQuizName("");
-          setScore(0);
-          setShowModal(false); // <-- Add this line
-        }}
-      />
-      {createQuiz && (
-        <QuizForm
-          quizName={quizName}
-          numQuestions={numQuestions}
-          duration={duration}
-          setQuizName={setQuizName}
-          setNumQuestions={setNumQuestions}
-          setDuration={setDuration}
-          handleSubmit={handleSubmit}
-        />
-      )}
-      {showCreateQOptWindow && (
-        <QuestionForm
-          currentQuestionIndex={currentQuestionIndex}
-          numQuestions={numQuestions}
-          formData={formData}
-          handleQuestiondetails={handleQuestiondetails}
-          handleQuestionSubmit={handleQuestionSubmit}
-        />
-      )}
-      {showQuizCard && !showCreateQOptWindow && !addQs && !edit && !startQuiz && (
-        <QuizCardList
-          quizCardList={quizlist}
-          setStartQuiz={setStartQuiz}
-          setShowQuizCard={setShowQuizCard}
-          setSelectedQuizId={setSelectedQuizId}
-          setEdit={setEdit}
-          setSelectedQuizName={setSelectedQuizName}
-          setNumQuestions={setNumQuestions}
-          setShowConfirm={setShowConfirm}
-          setAddQs={setAddQs}
-          setSelectedQuizNum={setSelectedQuizNum}
-          setUpNum={setUpNum}
-          handleEditQuizBackEnd={handleEditQuizBackEnd}
-        />
-      )}
-      {edit && toBeUpdatedFormData && (
-        <EditQuiz
-          editingIndex={editingIndex}
-          toBeUpdatedFormData={toBeUpdatedFormData}
-          upName={upName}
-          upNum={upNum}
-          upDuration={upDuration}
-          setUpName={setUpName}
-          setUpNum={setUpNum}
-          setUpDuration={setUpDuration}
-          formData={formData}
-          handleQuestiondetails={handleQuestiondetails}
-          handleEditSubmit={handleEditSubmit}
-          handleEditedQuestionSubmit={handleEditedQuestionSubmit}
-          handleEditDeleteQuestionSubmit={handleEditDeleteQuestionSubmit}
-        />
-      )}
-      {addQs && (
-        <AddQuestions
-          toBeUpdatedFormData={toBeUpdatedFormData}
-          editingIndex={editingIndex}
-          selectedQuizNum={selectedQuizNum}
-          upNum={upNum}
-          setUpNum={setUpNum}
-          formData={formData}
-          handleQuestiondetails={handleQuestiondetails}
-          handleAddQuestionSubmit={handleAddQuestionSubmit}
-          handleAddeddQuestionSubmit={handleAddeddQuestionSubmit}
-        />
-      )}
-      {startQuiz && quizeWindow()}
-      <ConfirmBox
-        show={showConfirm}
-        handleClose={() => setShowConfirm(false)}
-        handleConfirm={handleDelete}
-        message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
-      />
-      {/* <footer
-        className="bg-body-tertiary text-center"
-        style={{
-          position: "fixed",
-          left: 0,
-          bottom: 0,
-          width: "100%",
-        }}
+  <>
+    {/* Show auth screen if not logged in */}
+    {!authenticated ? (
+      <div
+        className="d-flex flex-column align-items-center justify-content-center"
+        style={{ background: "#f8f9fa", minHeight: "100vh" }}
       >
-        <div className="container p-4 pb-0">
-          <section className="mb-4">
-            <a
-              data-mdb-ripple-init
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#3b5998" }}
-              href="#!"
-              role="button"
-            >
-              <i className="fab fa-facebook-f"></i>
-            </a>
-            <a
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#55acee" }}
-              href="#!"
-              role="button"
-            >
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#dd4b39" }}
-              href="#!"
-              role="button"
-            >
-              <i className="fab fa-google"></i>
-            </a>
-            <a
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#ac2bac" }}
-              href="https://www.instagram.com/?hl=en"
-              role="button"
-            >
-              <i className="fab fa-instagram"></i>
-            </a>
-            <a
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#0082ca" }}
-              href="https://www.linkedin.com/in/yogesh-kumar-n-853084310/"
-              role="button"
-            >
-              <i className="fab fa-linkedin-in"></i>
-            </a>
-            <a
-              className="btn text-white btn-floating m-1"
-              style={{ backgroundColor: "#333333" }}
-              href="https://github.com/YOGESH-08"
-              role="button"
-            >
-              <i className="fab fa-github"></i>
-            </a>
-          </section>
+        {showSignup ? (
+          <Signup onAuthenticated={() => setAuthenticated(true)} />
+        ) : (
+          <Signin onAuthenticated={() => setAuthenticated(true)} />
+        )}
+        <div className="mb-4">
+          <button
+            className="btn btn-primary me-2"
+            onClick={() => setShowSignup(false)}
+          >
+            Sign In
+          </button>
+          <button
+            className="btn btn-success"
+            onClick={() => setShowSignup(true)}
+          >
+            Sign Up
+          </button>
         </div>
+      </div>
+    ) : (
+      <>
+        <Navbar
+          setCreateQuiz={setCreateQuiz}
+          navStates={() => {
+            setShowCreateQOptWindow(false);
+            setShowQuizCard(true);
+            setCreateQuiz(false);
+            setEdit(false);
+            setAddQs(false);
+            setStartQuiz(false);
+            setToBeUpdatedFormData(null);
+            setCurrentQuestionIndex(0);
+            setSelectedQuizId(0);
+            setSelectedQuizName("");
+            setScore(0);
+            setShowModal(false);
+          }}
+        />
 
-        <div
-          className="text-center p-3"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}
-        >
-          © 2025 Copyright
-        </div>
-      </footer> */}
-    </>
-  );
+        {createQuiz && (
+          <QuizForm
+            quizName={quizName}
+            numQuestions={numQuestions}
+            duration={duration}
+            setQuizName={setQuizName}
+            setNumQuestions={setNumQuestions}
+            setDuration={setDuration}
+            handleSubmit={handleSubmit}
+          />
+        )}
+
+        {showCreateQOptWindow && (
+          <QuestionForm
+            currentQuestionIndex={currentQuestionIndex}
+            numQuestions={numQuestions}
+            formData={formData}
+            handleQuestiondetails={handleQuestiondetails}
+            handleQuestionSubmit={handleQuestionSubmit}
+          />
+        )}
+
+        {showQuizCard &&
+          !showCreateQOptWindow &&
+          !addQs &&
+          !edit &&
+          !startQuiz && (
+            <QuizCardList
+              quizCardList={quizlist}
+              setStartQuiz={setStartQuiz}
+              setShowQuizCard={setShowQuizCard}
+              setSelectedQuizId={setSelectedQuizId}
+              setEdit={setEdit}
+              setSelectedQuizName={setSelectedQuizName}
+              setNumQuestions={setNumQuestions}
+              setShowConfirm={setShowConfirm}
+              setAddQs={setAddQs}
+              setSelectedQuizNum={setSelectedQuizNum}
+              setUpNum={setUpNum}
+              handleEditQuizBackEnd={handleEditQuizBackEnd}
+            />
+          )}
+
+        {edit && toBeUpdatedFormData && (
+          <EditQuiz
+            editingIndex={editingIndex}
+            toBeUpdatedFormData={toBeUpdatedFormData}
+            upName={upName}
+            upNum={upNum}
+            upDuration={upDuration}
+            setUpName={setUpName}
+            setUpNum={setUpNum}
+            setUpDuration={setUpDuration}
+            formData={formData}
+            handleQuestiondetails={handleQuestiondetails}
+            handleEditSubmit={handleEditSubmit}
+            handleEditedQuestionSubmit={handleEditedQuestionSubmit}
+            handleEditDeleteQuestionSubmit={handleEditDeleteQuestionSubmit}
+          />
+        )}
+
+        {addQs && (
+          <AddQuestions
+            toBeUpdatedFormData={toBeUpdatedFormData}
+            editingIndex={editingIndex}
+            selectedQuizNum={selectedQuizNum}
+            upNum={upNum}
+            setUpNum={setUpNum}
+            formData={formData}
+            handleQuestiondetails={handleQuestiondetails}
+            handleAddQuestionSubmit={handleAddQuestionSubmit}
+            handleAddeddQuestionSubmit={handleAddeddQuestionSubmit}
+          />
+        )}
+
+        {startQuiz && quizeWindow()}
+
+        <ConfirmBox
+          show={showConfirm}
+          handleClose={() => setShowConfirm(false)}
+          handleConfirm={handleDelete}
+          message={`Are you sure you want to delete ?\nNote: This cannot be undone.`}
+        />
+      </>
+    )}
+  </>
+);
+
 }
 
 export default App;
