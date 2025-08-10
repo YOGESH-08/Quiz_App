@@ -4,7 +4,8 @@ import { Ripple, initMDB } from "mdb-ui-kit";
 import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginForm from "./LoginForm";
+import Navbar from "./components/Navbar";
+import QuizCardList from "./components/QuizCardList";
 
 function App() {
   useEffect(() => {
@@ -360,79 +361,7 @@ const [score, setScore] = useState(0);
     }
   }
 
-  function quizCard() {
-    if (quizlist.length > 0 && showQuizCard) {
-      return (
-        <div className="d-flex flex-wrap justify-content-start gap-3">
-          {quizlist.map((Name, index) => (
-            <div key={index} className="card" style={{ width: "18rem" }}>
-              <div className="card-body">
-                <h2 className="card-title">{Name.quiz_name}</h2>
-              </div>
-              <ul className="list-group list-group-flush">
-                <li className="list-group-item">
-                  No. of Questions: {Name.total_questions}
-                </li>
-                <li className="list-group-item">
-                  Duration: {Name.duration_minutes} mins
-                </li>
-                <li className="list-group-item">
-  Score: {Name.score ?? "Not Attempted"}
-</li>
-              </ul>
-              <div className="card-body">
-                <a className="card-link" style={{ cursor: "pointer" }}
-                onClick={() => {setStartQuiz(true);setShowQuizCard(false); setSelectedQuizId(Name.quiz_id);}} >
-                  Start
-                </a>
-                <a
-                  className="card-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setEdit(true);
-                    setShowQuizCard(false);
-                    setSelectedQuizId(Name.quiz_id);
-                    setSelectedQuizName(Name.quiz_name);
-                    setNumQuestions(Name.total_questions);
-                  }}
-                >
-                  Edit
-                </a>
-                <a
-                  className="card-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowConfirm(true);
-                    setSelectedQuizName(Name.quiz_name);
-                    setSelectedQuizId(Name.quiz_id);
-                    console.log(selectedQuizId);
-                  }}
-                >
-                  Delete
-                </a>
-                <a
-                  className="card-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setAddQs(true);
-                    setShowQuizCard(false);
-                    setSelectedQuizId(Name.quiz_id);
-                    setSelectedQuizNum(Name.total_questions);
-                    setUpNum(Name.total_questions);
-                  }}
-                >
-                  Add-Q
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    } else if (showQuizCard && quizlist.length == 0) {
-      return <p>No Quizzes found!</p>;
-    }
-  }
+  
 
   useEffect(() => {
     console.log("selected quizid NUm of questions: ", selectedQuizNum);
@@ -1150,103 +1079,32 @@ function formatTime(secs) {
   }
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container-fluid">
-          <a className="navbar-brand">
-            <span style={{ color: "Green", fontSize: "30px" }}>Quize</span>
-          </a>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <a
-                  style={{ cursor: "pointer" }}
-                  className="nav-link active"
-                  aria-current="page"
-                  onClick={() => {
-                    setShowCreateQOptWindow(false);
-                    setCreateQuiz(false);
-                    setShowQuizCard(true);
-                    setEdit(false);
-                  }}
-                >
-                  Home
-                </a>
-              </li>
-              {/* <li className="nav-item">
-                <a className="nav-link">Import</a>
-              </li> */}
-              <li className="nav-item dropdown">
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="#"
-                  id="navbarDropdown"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Profile
-                </a>
-                <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Action
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Another action
-                    </a>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Log out
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setCreateQuiz(true);
-                  }}
-                >
-                  Create a New Quiz
-                </a>
-              </li>
-            </ul>
-            <form className="d-flex" role="search">
-              <input
-                className="form-control me-2"
-                type="search"
-                placeholder="Search Quiz"
-                aria-label="Search"
-              />
-              <button className="btn btn-outline-success" type="submit">
-                Search
-              </button>
-            </form>
-          </div>
-        </div>
-      </nav>
+      <Navbar 
+      setCreateQuiz = {setCreateQuiz}
+      navStates = {()=>{
+        setShowCreateQOptWindow(false);
+        setShowQuizCard(true);
+        setCreateQuiz(false);
+        setEdit(false);
+      }}
+      />
       {getInpForNewQuiz()}
       {quizQOptWindow()}
+      {showQuizCard && (
+  <QuizCardList
+    quizCardList={quizlist}
+    setStartQuiz={setStartQuiz}
+    setShowQuizCard={setShowQuizCard}
+    setSelectedQuizId={setSelectedQuizId}
+    setEdit={setEdit}
+    setSelectedQuizName={setSelectedQuizName}
+    setNumQuestions={setNumQuestions}
+    setShowConfirm={setShowConfirm}
+    setAddQs={setAddQs}
+    setSelectedQuizNum={setSelectedQuizNum}
+    setUpNum={setUpNum}
+  />
+)}
       {useEffect(() => {
         if (edit) {
           handleEditQuizBackEnd();
@@ -1254,7 +1112,7 @@ function formatTime(secs) {
       }, [edit])}
       {startQuiz && quizeWindow()}
 
-      {!createQuiz && !showCreateQOptWindow && quizCard()}
+      {!createQuiz && !showCreateQOptWindow && showQuizCard}
       <div>
         {showConfirm ? (
           <ConfirmBox
@@ -1332,7 +1190,6 @@ function formatTime(secs) {
         >
           © 2025 Copyright
         </div>
-        <LoginForm />
       </footer>
     </>
   );
